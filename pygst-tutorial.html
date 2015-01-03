@@ -1,0 +1,1188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Python GStreamer Tutorial</title>
+<!-- 2015-01-03 Sat 14:58 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Jens Persson and Ruben Gonzalez and Brett Viren" />
+<meta  name="description" content="Rescued by from Internet death by [[https://github.com/rubenrua/GstreamerCodeSnippets][rubenrua]]"
+ />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Python GStreamer Tutorial</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Meta</a></li>
+<li><a href="#sec-2">2. Introduction</a></li>
+<li><a href="#sec-3">3. Playbin</a></li>
+<li><a href="#sec-4">4. Pipeline</a></li>
+<li><a href="#sec-5">5. Src, sink, pad &#x2026; oh my!</a></li>
+<li><a href="#sec-6">6. Seeking</a></li>
+</ul>
+</div>
+</div>
+<p>
+This tutorial aims at giving a brief introduction to the GStreamer multimedia framework.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Meta</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Diagrams use solid line rectangles to indicate "elements", rounded solid line rectangles to indicate "bins" (and "pipelines"), rounded dashed rectangles to indicate "pads".
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Introduction</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+This tutorial is meant to be a quick way to get to know more about Gstreamer but it'll take some time to write it though because we don't know it ourselves &#x2026; yet. We're usually using GNU/Linux and GTK in the examples but we try to keep the GUI code to an absolute minimum so it should not get in the way. Just remember that Gstreamer depends heavily on Glib so you must make sure that the <a href="http://pygstdocs.berlios.de/pygobject-reference/class-glibmainloop.html">Glib Mainloop</a> is running if you want to catch events on the bus. We take for granted that you are at least a fairly descent Python coder. For problems related to the Python language we redirect you over to <a href="http://python.org/doc">Online Python docs</a>.
+</p>
+
+<p>
+As you may see this tutorial is far from done and we are always looking for new people to join this project. If you want to write a chapter just do it and submit it to some of the people having commiting access to the source. You find us <a href="http://developer.berlios.de/projects/pygstdocs/">here</a> (ed: dead). TIA
+</p>
+
+<p>
+There are also some example coding distributed with the PyGST source which you may browse <a href="http://cgit.freedesktop.org/gstreamer/gst-python/tree/examples">here</a>.
+</p>
+
+<p>
+Gstreamer comes with a few handy CLI programs that helps you find and try out what you need in a very fast and convenient way. With "gst-inspect" you can track highlevel elements which are shipped with the various plugins packages.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">man gst-inspect-1.0
+</pre>
+</div>
+
+<p>
+If you are looking for an element but you don't know its name you can use it with grep. Getting the elements that handles ie mp3 is done like this:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-inspect-1.0 | grep mp3 | sort | head -3
+</pre>
+</div>
+
+<pre class="example">
+flump3dec:  flump3dec: Fluendo MP3 Decoder (liboil build)
+lame:  lamemp3enc: L.A.M.E. mp3 encoder
+libav:  avdec_mp3adufloat: libav ADU (Application Data Unit) MP3 (MPEG audio layer 3) decoder
+</pre>
+
+
+<p>
+Playbin is an autoplugger element which usually plays anything you throw at it, if you have the appropriate plugins installed.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-inspect-1.0 playbin &gt; gst-inspect-playbin.txt
+</pre>
+</div>
+
+<p>
+Browse example output <a href="./gst-inspect-playbin.txt">here</a>. 
+</p>
+
+<p>
+You can also run pipelines directly in a terminal with "gst-launch":
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">man gst-launch-1.0
+</pre>
+</div>
+
+<p>
+For playing a file with playbin:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-launch-1.0 playbin <span style="color: #a0522d;">uri</span>=http://docs.gstreamer.com/media/sintel_trailer-480p.webm
+</pre>
+</div>
+
+<p>
+It's also possible to link elements together with "!":
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-launch-1.0 audiotestsrc ! alsasink
+</pre>
+</div>
+
+<p>
+You may also make different streams in the pipeline:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-launch-1.0 audiotestsrc ! alsasink videotestsrc ! xvimagesink
+</pre>
+</div>
+
+<p>
+Or, you can make a single frame JPEG
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-launch-1.0 videotestsrc num-buffers=1 ! jpegenc ! filesink <span style="color: #a0522d;">location</span>=videotestsrc-frame.jpg
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="./videotestsrc-frame.jpg" alt="videotestsrc-frame.jpg" />
+</p>
+</div>
+
+<p>
+If you are using the "name" property you may use the same element more than once. Just put a "." after its name, eg with oggmux here.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-launch-1.0 audiotestsrc ! vorbisenc ! oggmux <span style="color: #a0522d;">name</span>=mux ! filesink <span style="color: #a0522d;">location</span>=file.ogg videotestsrc ! theoraenc ! mux.
+</pre>
+</div>
+
+<p>
+In the next chapter we will show you more examples with Playbin.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Playbin</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+A playbin is a highlevel, automatic, audio and video player. You create a playbin object with:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">'Gst'</span>, <span style="color: #8b2252;">'1.0'</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst
+Gst.init(<span style="color: #008b8b;">None</span>)
+<span style="color: #b22222;"># </span><span style="color: #b22222;">...</span>
+<span style="color: #a0522d;">my_playbin</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"playbin"</span>, <span style="color: #008b8b;">None</span>)
+<span style="color: #a020f0;">assert</span> my_playbin
+<span style="color: #a020f0;">print</span> my_playbin
+</pre>
+</div>
+
+<p>
+To get information about a playbin run:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-inspect-0.10 playbin
+</pre>
+</div>
+
+<p>
+This figure shows how playbin is built internally. The "optional stuff" are things that could be platform specific or things that you may set with properties.
+</p>
+
+
+
+<div class="figure">
+<p><img src="playbin-block.png" alt="playbin-block.png" />
+</p>
+</div>
+
+
+
+<p>
+The "<b>uri</b>" property should take any possible protocol supported by your Gstreamer plugins. One nice feature is that you may switch the sinks out for your own bins as shown below. Playbin always tries to set up the best possible pipeline for your specific environment so if you don't need any special features that are not implemented in playbin, it should in most cases just work "out of the box". Ok, time for a few examples.
+</p>
+
+<p>
+This first example is just a simple audio player, insert a file with absolute path and it'll play.  It is available as <a href="./playbin-example-audio.py">./playbin-example-audio.py</a>.  You can run it like:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">python playbin-example-audio.py
+</pre>
+</div>
+
+<p>
+It will open a small window with a text entry.  Enter the full path to some audio file and click "Start".
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> sys, os
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">'Gst'</span>, <span style="color: #8b2252;">'1.0'</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GObject, Gtk
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">GTK_Main</span>(<span style="color: #483d8b;">object</span>):
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">window</span> = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        window.set_title(<span style="color: #8b2252;">"Audio-Player"</span>)
+        window.set_default_size(300, -1)
+        window.connect(<span style="color: #8b2252;">"destroy"</span>, Gtk.main_quit, <span style="color: #8b2252;">"WM destroy"</span>)
+        <span style="color: #a0522d;">vbox</span> = Gtk.VBox()
+        window.add(vbox)
+        <span style="color: #a020f0;">self</span>.entry = Gtk.Entry()
+        vbox.pack_start(<span style="color: #a020f0;">self</span>.entry, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">True</span>, 0)
+        <span style="color: #a020f0;">self</span>.button = Gtk.Button(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">self</span>.button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.start_stop)
+        vbox.add(<span style="color: #a020f0;">self</span>.button)
+        window.show_all()
+
+        <span style="color: #a020f0;">self</span>.player = Gst.ElementFactory.make(<span style="color: #8b2252;">"playbin"</span>, <span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a0522d;">fakesink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"fakesink"</span>, <span style="color: #8b2252;">"fakesink"</span>)
+        <span style="color: #a020f0;">self</span>.player.set_property(<span style="color: #8b2252;">"video-sink"</span>, fakesink)
+        <span style="color: #a0522d;">bus</span> = <span style="color: #a020f0;">self</span>.player.get_bus()
+        bus.add_signal_watch()
+        bus.connect(<span style="color: #8b2252;">"message"</span>, <span style="color: #a020f0;">self</span>.on_message)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start_stop</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a020f0;">if</span> <span style="color: #a020f0;">self</span>.button.get_label() == <span style="color: #8b2252;">"Start"</span>:
+            <span style="color: #a0522d;">filepath</span> = <span style="color: #a020f0;">self</span>.entry.get_text().strip()
+            <span style="color: #a020f0;">if</span> os.path.isfile(filepath):
+                <span style="color: #a0522d;">filepath</span> = os.path.realpath(filepath)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Stop"</span>)
+                <span style="color: #a020f0;">self</span>.player.set_property(<span style="color: #8b2252;">"uri"</span>, <span style="color: #8b2252;">"file://"</span> + filepath)
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PLAYING)
+            <span style="color: #a020f0;">else</span>:
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a0522d;">t</span> = message.<span style="color: #483d8b;">type</span>
+        <span style="color: #a020f0;">if</span> t == Gst.MessageType.EOS:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">elif</span> t == Gst.MessageType.ERROR:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a0522d;">err</span>, debug = message.parse_error()
+            <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Error: %s"</span> % err, debug
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+
+Gst.init(<span style="color: #008b8b;">None</span>)
+GTK_Main()
+GObject.threads_init()
+Gtk.main()
+</pre>
+</div>
+
+<p>
+A playbin plugs both audio and video streams automagically so I've switched the videosink out to a fakesink element which is Gstreamer's answer to /dev/null. If you want to enable video playback just comment out the following lines:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #a0522d;">fakesink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"fakesink"</span>, <span style="color: #8b2252;">"fakesink"</span>)
+<span style="color: #a020f0;">self</span>.player.set_property(<span style="color: #8b2252;">"video-sink"</span>, fakesink)
+</pre>
+</div>
+
+<p>
+If you want to show the video output in a specified window you'll have to use the <code>enable_sync_message_emission()</code> method on the bus. Here is an example with the video window embedded in the program.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> sys, os
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">'Gst'</span>, <span style="color: #8b2252;">'1.0'</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GObject, Gtk
+
+<span style="color: #b22222;"># </span><span style="color: #b22222;">Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:</span>
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> GdkX11, GstVideo
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">GTK_Main</span>(<span style="color: #483d8b;">object</span>):
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">window</span> = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        window.set_title(<span style="color: #8b2252;">"Video-Player"</span>)
+        window.set_default_size(500, 400)
+        window.connect(<span style="color: #8b2252;">"destroy"</span>, Gtk.main_quit, <span style="color: #8b2252;">"WM destroy"</span>)
+        <span style="color: #a0522d;">vbox</span> = Gtk.VBox()
+        window.add(vbox)
+        <span style="color: #a0522d;">hbox</span> = Gtk.HBox()
+        vbox.pack_start(hbox, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">False</span>, 0)
+        <span style="color: #a020f0;">self</span>.entry = Gtk.Entry()
+        hbox.add(<span style="color: #a020f0;">self</span>.entry)
+        <span style="color: #a020f0;">self</span>.button = Gtk.Button(<span style="color: #8b2252;">"Start"</span>)
+        hbox.pack_start(<span style="color: #a020f0;">self</span>.button, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">False</span>, 0)
+        <span style="color: #a020f0;">self</span>.button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.start_stop)
+        <span style="color: #a020f0;">self</span>.movie_window = Gtk.DrawingArea()
+        vbox.add(<span style="color: #a020f0;">self</span>.movie_window)
+        window.show_all()
+
+        <span style="color: #a020f0;">self</span>.player = Gst.ElementFactory.make(<span style="color: #8b2252;">"playbin"</span>, <span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a0522d;">bus</span> = <span style="color: #a020f0;">self</span>.player.get_bus()
+        bus.add_signal_watch()
+        bus.enable_sync_message_emission()
+        bus.connect(<span style="color: #8b2252;">"message"</span>, <span style="color: #a020f0;">self</span>.on_message)
+        bus.connect(<span style="color: #8b2252;">"sync-message::element"</span>, <span style="color: #a020f0;">self</span>.on_sync_message)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start_stop</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a020f0;">if</span> <span style="color: #a020f0;">self</span>.button.get_label() == <span style="color: #8b2252;">"Start"</span>:
+            <span style="color: #a0522d;">filepath</span> = <span style="color: #a020f0;">self</span>.entry.get_text().strip()
+            <span style="color: #a020f0;">if</span> os.path.isfile(filepath):
+                <span style="color: #a0522d;">filepath</span> = os.path.realpath(filepath)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Stop"</span>)
+                <span style="color: #a020f0;">self</span>.player.set_property(<span style="color: #8b2252;">"uri"</span>, <span style="color: #8b2252;">"file://"</span> + filepath)
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PLAYING)
+            <span style="color: #a020f0;">else</span>:
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a0522d;">t</span> = message.<span style="color: #483d8b;">type</span>
+        <span style="color: #a020f0;">if</span> t == Gst.MessageType.EOS:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">elif</span> t == Gst.MessageType.ERROR:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a0522d;">err</span>, debug = message.parse_error()
+            <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Error: %s"</span> % err, debug
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_sync_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a020f0;">if</span> message.get_structure().get_name() == <span style="color: #8b2252;">'prepare-window-handle'</span>:
+            imagesink = message.src
+            imagesink.set_property(<span style="color: #8b2252;">"force-aspect-ratio"</span>, <span style="color: #008b8b;">True</span>)
+            imagesink.set_window_handle(<span style="color: #a020f0;">self</span>.movie_window.get_property(<span style="color: #8b2252;">'window'</span>).get_xid())
+
+
+GObject.threads_init()
+Gst.init(<span style="color: #008b8b;">None</span>)        
+GTK_Main()
+Gtk.main()
+</pre>
+</div>
+
+<p>
+And just to make things a little more complicated you can switch the playbins videosink to a <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html"><code>Gst.Bin</code></a> with a <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstGhostPad.html"><code>Gst.GhostPad</code></a> on it. Here's an example with a timeoverlay.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #483d8b;">bin</span> = Gst.Bin.new(<span style="color: #8b2252;">"my-bin"</span>)
+<span style="color: #a0522d;">timeoverlay</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"timeoverlay"</span>)
+<span style="color: #483d8b;">bin</span>.add(timeoverlay)
+<span style="color: #a0522d;">pad</span> = timeoverlay.get_static_pad(<span style="color: #8b2252;">"video_sink"</span>)
+<span style="color: #a0522d;">ghostpad</span> = Gst.GhostPad.new(<span style="color: #8b2252;">"sink"</span>, pad)
+<span style="color: #483d8b;">bin</span>.add_pad(ghostpad)
+<span style="color: #a0522d;">videosink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"autovideosink"</span>)
+<span style="color: #483d8b;">bin</span>.add(videosink)
+timeoverlay.link(videosink)
+<span style="color: #a020f0;">self</span>.player.set_property(<span style="color: #8b2252;">"video-sink"</span>, <span style="color: #483d8b;">bin</span>)
+</pre>
+</div>
+
+<p>
+Add that code to the example above and you'll get a timeoverlay too. We'll talk more about ghostpads later.
+</p>
+
+<p>
+On peoples requests we add a CLI example which plays music, just run it with:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">python cliplayer.py /path/to/file1.mp3 /path/to/file2.ogg
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> sys, os, time, thread
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">'Gst'</span>, <span style="color: #8b2252;">'1.0'</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GLib, GObject
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">CLI_Main</span>(<span style="color: #483d8b;">object</span>):
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a020f0;">self</span>.player = Gst.ElementFactory.make(<span style="color: #8b2252;">"playbin"</span>, <span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a0522d;">fakesink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"fakesink"</span>, <span style="color: #8b2252;">"fakesink"</span>)
+        <span style="color: #a020f0;">self</span>.player.set_property(<span style="color: #8b2252;">"video-sink"</span>, fakesink)
+        <span style="color: #a0522d;">bus</span> = <span style="color: #a020f0;">self</span>.player.get_bus()
+        bus.add_signal_watch()
+        bus.connect(<span style="color: #8b2252;">"message"</span>, <span style="color: #a020f0;">self</span>.on_message)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a0522d;">t</span> = message.<span style="color: #483d8b;">type</span>
+        <span style="color: #a020f0;">if</span> t == Gst.MessageType.EOS:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.playmode = <span style="color: #008b8b;">False</span>
+        <span style="color: #a020f0;">elif</span> t == Gst.MessageType.ERROR:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a0522d;">err</span>, debug = message.parse_error()
+            <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Error: %s"</span> % err, debug
+            <span style="color: #a020f0;">self</span>.playmode = <span style="color: #008b8b;">False</span>
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a020f0;">for</span> filepath <span style="color: #a020f0;">in</span> sys.argv[1:]:
+            <span style="color: #a020f0;">if</span> os.path.isfile(filepath):
+                filepath = os.path.realpath(filepath)
+                <span style="color: #a020f0;">self</span>.playmode = <span style="color: #008b8b;">True</span>
+                <span style="color: #a020f0;">self</span>.player.set_property(<span style="color: #8b2252;">"uri"</span>, <span style="color: #8b2252;">"file://"</span> + filepath)
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PLAYING)
+                <span style="color: #a020f0;">while</span> <span style="color: #a020f0;">self</span>.playmode:
+                    time.sleep(1)
+        time.sleep(1)
+        loop.<span style="color: #008b8b;">quit</span>()
+
+GObject.threads_init()
+Gst.init(<span style="color: #008b8b;">None</span>)        
+mainclass = CLI_Main()
+thread.start_new_thread(mainclass.start, ())
+loop = GLib.MainLoop()
+loop.run()
+</pre>
+</div>
+
+
+<p>
+A playbin implements a <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPipeline.html"><code>Gst.Pipeline</code></a> element and that's what the next chapter is going to tell you more about.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Pipeline</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+A <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPipeline.html"><code>Gst.Pipeline</code></a> is a top-level bin with its own bus and clock. If your program only contains one bin-like object, this is what you're looking for. You create a pipeline object with:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #a0522d;">my_pipeline</span> = Gst.Pipeline(<span style="color: #8b2252;">"my-pipeline"</span>)
+</pre>
+</div>
+
+<p>
+A pipeline is just a "container" where you can put other objects and when everything is in place and the file to play is specified you just set the pipelines state to <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html#GstBin.notes"><code>Gst.State.PLAYING</code></a> and there should be multimedia coming out of it.
+</p>
+
+<p>
+In this first example I have taken the Audio-Player from the Playbin chapter and switched the playbin out for my own mp3 decoding capable pipeline. You can also testdrive pipelines with a program called gst-launch directly in a shell. That is, the next example below would look like this:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-launch-1.0 filesrc <span style="color: #a0522d;">location</span>=file.mp3 ! mad ! audioconvert ! alsasink
+</pre>
+</div>
+
+<p>
+Conceptually the pipeline is like:
+</p>
+
+
+<div class="figure">
+<p><img src="pipeline-block.png" alt="pipeline-block.png" />
+</p>
+</div>
+
+<p>
+and the source:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> sys, os
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">'Gst'</span>, <span style="color: #8b2252;">'1.0'</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GObject, Gtk
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">GTK_Main</span>(<span style="color: #483d8b;">object</span>):
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">window</span> = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        window.set_title(<span style="color: #8b2252;">"MP3-Player"</span>)
+        window.set_default_size(400, 200)
+        window.connect(<span style="color: #8b2252;">"destroy"</span>, Gtk.main_quit, <span style="color: #8b2252;">"WM destroy"</span>)
+        <span style="color: #a0522d;">vbox</span> = Gtk.VBox()
+        window.add(vbox)
+        <span style="color: #a020f0;">self</span>.entry = Gtk.Entry()
+        vbox.pack_start(<span style="color: #a020f0;">self</span>.entry, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">True</span>, 0)
+        <span style="color: #a020f0;">self</span>.button = Gtk.Button(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">self</span>.button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.start_stop)
+        vbox.add(<span style="color: #a020f0;">self</span>.button)
+        window.show_all()
+
+        <span style="color: #a020f0;">self</span>.player = Gst.Pipeline.new(<span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a0522d;">source</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"filesrc"</span>, <span style="color: #8b2252;">"file-source"</span>)
+        <span style="color: #a0522d;">decoder</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"mad"</span>, <span style="color: #8b2252;">"mp3-decoder"</span>)
+        <span style="color: #a0522d;">conv</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"audioconvert"</span>, <span style="color: #8b2252;">"converter"</span>)
+        <span style="color: #a0522d;">sink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"alsasink"</span>, <span style="color: #8b2252;">"alsa-output"</span>)
+
+        <span style="color: #a020f0;">self</span>.player.add(source)
+        <span style="color: #a020f0;">self</span>.player.add(decoder)
+        <span style="color: #a020f0;">self</span>.player.add(conv)
+        <span style="color: #a020f0;">self</span>.player.add(sink)
+        source.link(decoder)
+        decoder.link(conv)
+        conv.link(sink)
+
+        <span style="color: #a0522d;">bus</span> = <span style="color: #a020f0;">self</span>.player.get_bus()
+        bus.add_signal_watch()
+        bus.connect(<span style="color: #8b2252;">"message"</span>, <span style="color: #a020f0;">self</span>.on_message)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start_stop</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a020f0;">if</span> <span style="color: #a020f0;">self</span>.button.get_label() == <span style="color: #8b2252;">"Start"</span>:
+            <span style="color: #a0522d;">filepath</span> = <span style="color: #a020f0;">self</span>.entry.get_text().strip()
+            <span style="color: #a020f0;">if</span> os.path.isfile(filepath):
+                <span style="color: #a0522d;">filepath</span> = os.path.realpath(filepath)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Stop"</span>)
+                <span style="color: #a020f0;">self</span>.player.get_by_name(<span style="color: #8b2252;">"file-source"</span>).set_property(<span style="color: #8b2252;">"location"</span>, filepath)
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PLAYING)
+            <span style="color: #a020f0;">else</span>:
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a0522d;">t</span> = message.<span style="color: #483d8b;">type</span>
+        <span style="color: #a020f0;">if</span> t == Gst.MessageType.EOS:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">elif</span> t == Gst.MessageType.ERROR:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+            <span style="color: #a0522d;">err</span>, debug = message.parse_error()
+            <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Error: %s"</span> % err, debug
+
+Gst.init(<span style="color: #008b8b;">None</span>)
+GTK_Main()
+GObject.threads_init()
+Gtk.main()
+</pre>
+</div>
+
+
+<p>
+The next example is playing Mpeg2 videos. Some demuxers, such as <code>mpegdemux</code>, uses dynamic pads which are created at runtime and therefor you can't link between the demuxer and the next element in the pipeline before the pad has been created at runtime. Watch out for the <code>demuxer_callback()</code> method below.
+</p>
+
+<p>
+THIS EXAMPLE IS NOT WORKING YET!!! You may submit a solution for it and we will announce a winner that gets, at your option, a date with Richard M Stallman, Eric S Raymond or Scarlett Johansson. And before anyone asks, NO, you may only choose ONE of the above choices! TIA
+</p>
+
+<p>
+UPDATE! The competition is over. Mike Auty fixed it with a few queues. He passed on the grand prize though saying he's too busy coding so no time for dating. :D
+</p>
+
+
+<div class="figure">
+<p><img src="pipeline-branch-block.png" alt="pipeline-branch-block.png" />
+</p>
+</div>
+
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> sys, os
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">'Gst'</span>, <span style="color: #8b2252;">'1.0'</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GObject, Gtk
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">GTK_Main</span>(<span style="color: #483d8b;">object</span>):
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">window</span> = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        window.set_title(<span style="color: #8b2252;">"Mpeg2-Player"</span>)
+        window.set_default_size(500, 400)
+        window.connect(<span style="color: #8b2252;">"destroy"</span>, Gtk.main_quit, <span style="color: #8b2252;">"WM destroy"</span>)
+        <span style="color: #a0522d;">vbox</span> = Gtk.VBox()
+        window.add(vbox)
+        <span style="color: #a0522d;">hbox</span> = Gtk.HBox()
+        vbox.pack_start(hbox, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">False</span>, 0)
+        <span style="color: #a020f0;">self</span>.entry = Gtk.Entry()
+        hbox.add(<span style="color: #a020f0;">self</span>.entry)
+        <span style="color: #a020f0;">self</span>.button = Gtk.Button(<span style="color: #8b2252;">"Start"</span>)
+        hbox.pack_start(<span style="color: #a020f0;">self</span>.button, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">False</span>, 0)
+        <span style="color: #a020f0;">self</span>.button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.start_stop)
+        <span style="color: #a020f0;">self</span>.movie_window = Gtk.DrawingArea()
+        vbox.add(<span style="color: #a020f0;">self</span>.movie_window)
+        window.show_all()
+
+        <span style="color: #a020f0;">self</span>.player = Gst.Pipeline.new(<span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a0522d;">source</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"filesrc"</span>, <span style="color: #8b2252;">"file-source"</span>)
+        <span style="color: #a0522d;">demuxer</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"mpegpsdemux"</span>, <span style="color: #8b2252;">"demuxer"</span>)
+        demuxer.connect(<span style="color: #8b2252;">"pad-added"</span>, <span style="color: #a020f0;">self</span>.demuxer_callback)
+        <span style="color: #a020f0;">self</span>.video_decoder = Gst.ElementFactory.make(<span style="color: #8b2252;">"mpeg2dec"</span>, <span style="color: #8b2252;">"video-decoder"</span>)
+        <span style="color: #a020f0;">self</span>.audio_decoder = Gst.ElementFactory.make(<span style="color: #8b2252;">"mad"</span>, <span style="color: #8b2252;">"audio-decoder"</span>)
+        <span style="color: #a0522d;">audioconv</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"audioconvert"</span>, <span style="color: #8b2252;">"converter"</span>)
+        <span style="color: #a0522d;">audiosink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"autoaudiosink"</span>, <span style="color: #8b2252;">"audio-output"</span>)
+        <span style="color: #a0522d;">videosink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"autovideosink"</span>, <span style="color: #8b2252;">"video-output"</span>)
+        <span style="color: #a020f0;">self</span>.queuea = Gst.ElementFactory.make(<span style="color: #8b2252;">"queue"</span>, <span style="color: #8b2252;">"queuea"</span>)
+        <span style="color: #a020f0;">self</span>.queuev = Gst.ElementFactory.make(<span style="color: #8b2252;">"queue"</span>, <span style="color: #8b2252;">"queuev"</span>)
+        <span style="color: #a0522d;">colorspace</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"videoconvert"</span>, <span style="color: #8b2252;">"colorspace"</span>)
+
+        <span style="color: #a020f0;">self</span>.player.add(source) 
+        <span style="color: #a020f0;">self</span>.player.add(demuxer) 
+        <span style="color: #a020f0;">self</span>.player.add(<span style="color: #a020f0;">self</span>.video_decoder) 
+        <span style="color: #a020f0;">self</span>.player.add(<span style="color: #a020f0;">self</span>.audio_decoder) 
+        <span style="color: #a020f0;">self</span>.player.add(audioconv) 
+        <span style="color: #a020f0;">self</span>.player.add(audiosink) 
+        <span style="color: #a020f0;">self</span>.player.add(videosink) 
+        <span style="color: #a020f0;">self</span>.player.add(<span style="color: #a020f0;">self</span>.queuea) 
+        <span style="color: #a020f0;">self</span>.player.add(<span style="color: #a020f0;">self</span>.queuev) 
+        <span style="color: #a020f0;">self</span>.player.add(colorspace)
+
+        source.link(demuxer)
+
+        <span style="color: #a020f0;">self</span>.queuev.link(<span style="color: #a020f0;">self</span>.video_decoder)
+        <span style="color: #a020f0;">self</span>.video_decoder.link(colorspace)
+        colorspace.link(videosink)
+
+        <span style="color: #a020f0;">self</span>.queuea.link(<span style="color: #a020f0;">self</span>.audio_decoder)
+        <span style="color: #a020f0;">self</span>.audio_decoder.link(audioconv)
+        audioconv.link(audiosink)
+
+        <span style="color: #a0522d;">bus</span> = <span style="color: #a020f0;">self</span>.player.get_bus()
+        bus.add_signal_watch()
+        bus.enable_sync_message_emission()
+        bus.connect(<span style="color: #8b2252;">"message"</span>, <span style="color: #a020f0;">self</span>.on_message)
+        bus.connect(<span style="color: #8b2252;">"sync-message::element"</span>, <span style="color: #a020f0;">self</span>.on_sync_message)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start_stop</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a020f0;">if</span> <span style="color: #a020f0;">self</span>.button.get_label() == <span style="color: #8b2252;">"Start"</span>:
+            <span style="color: #a0522d;">filepath</span> = <span style="color: #a020f0;">self</span>.entry.get_text().strip()
+            <span style="color: #a020f0;">if</span> os.path.isfile(filepath):
+                <span style="color: #a0522d;">filepath</span> = os.path.realpath(filepath)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Stop"</span>)
+                <span style="color: #a020f0;">self</span>.player.get_by_name(<span style="color: #8b2252;">"file-source"</span>).set_property(<span style="color: #8b2252;">"location"</span>, filepath)
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PLAYING)
+            <span style="color: #a020f0;">else</span>:
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a0522d;">t</span> = message.<span style="color: #483d8b;">type</span>
+        <span style="color: #a020f0;">if</span> t == Gst.MessageType.EOS:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">elif</span> t == Gst.MessageType.ERROR:
+            <span style="color: #a0522d;">err</span>, debug = message.parse_error()
+            <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Error: %s"</span> % err, debug
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_sync_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a020f0;">if</span> message.get_structure().get_name() == <span style="color: #8b2252;">'prepare-window-handle'</span>:
+            imagesink = message.src
+            imagesink.set_property(<span style="color: #8b2252;">"force-aspect-ratio"</span>, <span style="color: #008b8b;">True</span>)
+            xid = <span style="color: #a020f0;">self</span>.movie_window.get_property(<span style="color: #8b2252;">'window'</span>).get_xid()
+            imagesink.set_window_handle(xid)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">demuxer_callback</span>(<span style="color: #a020f0;">self</span>, demuxer, pad):
+        <span style="color: #a020f0;">if</span> pad.get_property(<span style="color: #8b2252;">"template"</span>).name_template == <span style="color: #8b2252;">"video_%02d"</span>:
+            qv_pad = <span style="color: #a020f0;">self</span>.queuev.get_pad(<span style="color: #8b2252;">"sink"</span>)
+            pad.link(qv_pad)
+        <span style="color: #a020f0;">elif</span> pad.get_property(<span style="color: #8b2252;">"template"</span>).name_template == <span style="color: #8b2252;">"audio_%02d"</span>:
+            qa_pad = <span style="color: #a020f0;">self</span>.queuea.get_pad(<span style="color: #8b2252;">"sink"</span>)
+            pad.link(qa_pad)
+
+
+Gst.init(<span style="color: #008b8b;">None</span>)
+GTK_Main()
+GObject.threads_init()
+Gtk.main()
+</pre>
+</div>
+
+<p>
+This example is here <a href="./pipeline-branch-example.py">./pipeline-branch-example.py</a>.
+</p>
+
+<p>
+The elements in a pipeline connects to each other with pads and that's what the next chapter will tell you more about.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Src, sink, pad &#x2026; oh my!</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Hehe, now this isn't so complicated as it may seem at a first glance. A <i>src</i> is an object that is "sending" data and a <i>sink</i> is an object that is "receiving" data. These objects connect to each other with <i>pads</i>. Pads could be either <i>src</i> or <i>sink</i>. Most elements have both <i>src</i> and <i>sink</i> pads. For example, a <code>mad</code> MP3 decoder element looks something like the ASCII figure below:
+</p>
+
+
+
+<div class="figure">
+<p><img src="sink-src-block.png" alt="sink-src-block.png" />
+</p>
+</div>
+
+<p>
+And as always if you want to know more about highlevel elements gst-inspect is your friend:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-inspect-1.0 mad
+</pre>
+</div>
+
+<p>
+In particular, the inheritance diagram shows that <code>mad</code> is an element:
+</p>
+
+<pre class="example">
+GObject
+ +----GInitiallyUnowned
+       +----GstObject
+             +----GstElement
+                   +----GstAudioDecoder
+                         +----GstMad
+</pre>
+
+<p>
+There are many different ways to link elements together. In <a href="./pipeline-example.py">./pipeline-example.py</a> we used the <code>Gst.Pipeline.add()</code> and the <code>.link()</code> method of the produced elements. You can also make a completely ready-to-go pipeline with the <code>parse_launch()</code> function. The many <code>.add()</code> calls in that example can be rewritten as:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #a0522d;">mp3_pipeline</span> = Gst.parse_launch(<span style="color: #8b2252;">"filesrc name=source ! mad name=decoder ! audioconvert name=conv ! alsasink name=sink"</span>)
+</pre>
+</div>
+
+<p>
+The micro-language used in this function call is that of the <code>gst-launch</code> command line program.
+</p>
+
+<p>
+When you do manually link pads with the <code>.link()</code> method make sure that you link a <i>src</i>-pad to a <i>sink</i>-pad. No rule though without exceptions. A <code>Gst.GhostPad</code> should be linked to a pad of the same kind as it self. We have already showed how a ghostpad works in the addition to example 2.2. A <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html"><code>Gst.Bin</code></a> can't link to other objects if you don't link a <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstGhostPad.html"><code>Gst.GhostPad</code></a> to an element inside the bin. The <a href="./playbin-example-video.py">./playbin-example-video.py</a> example in section <a href="#sec-3">3</a>  should look something like this:
+</p>
+
+
+<div class="figure">
+<p><img src="playbin-pads-block.png" alt="playbin-pads-block.png" />
+</p>
+</div>
+
+<p>
+And the ghostpad above should be created as type "sink"!!!
+</p>
+
+<p>
+Some pads are not always available and are only created when they are in use. Such pads are called "dynamical pads". The next example will show how to use dynamically created pads with an oggdemux. The link between the demuxer and the decoder is created with the <code>demuxer_callback()</code> method, which is called whenever a pad is created in the demuxer using the "pad-added" signal.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> sys, os
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">'Gst'</span>, <span style="color: #8b2252;">'1.0'</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GObject, Gtk
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">GTK_Main</span>(<span style="color: #483d8b;">object</span>):
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">window</span> = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        window.set_title(<span style="color: #8b2252;">"Vorbis-Player"</span>)
+        window.set_default_size(500, 200)
+        window.connect(<span style="color: #8b2252;">"destroy"</span>, Gtk.main_quit, <span style="color: #8b2252;">"WM destroy"</span>)
+        <span style="color: #a0522d;">vbox</span> = Gtk.VBox()
+        window.add(vbox)
+        <span style="color: #a020f0;">self</span>.entry = Gtk.Entry()
+        vbox.pack_start(<span style="color: #a020f0;">self</span>.entry, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">False</span>, 0)
+        <span style="color: #a020f0;">self</span>.button = Gtk.Button(<span style="color: #8b2252;">"Start"</span>)
+        vbox.add(<span style="color: #a020f0;">self</span>.button)
+        <span style="color: #a020f0;">self</span>.button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.start_stop)
+        window.show_all()
+
+        <span style="color: #a020f0;">self</span>.player = Gst.Pipeline.new(<span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a0522d;">source</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"filesrc"</span>, <span style="color: #8b2252;">"file-source"</span>)
+        <span style="color: #a0522d;">demuxer</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"oggdemux"</span>, <span style="color: #8b2252;">"demuxer"</span>)
+        demuxer.connect(<span style="color: #8b2252;">"pad-added"</span>, <span style="color: #a020f0;">self</span>.demuxer_callback)
+        <span style="color: #a020f0;">self</span>.audio_decoder = Gst.ElementFactory.make(<span style="color: #8b2252;">"vorbisdec"</span>, <span style="color: #8b2252;">"vorbis-decoder"</span>)
+        <span style="color: #a0522d;">audioconv</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"audioconvert"</span>, <span style="color: #8b2252;">"converter"</span>)
+        <span style="color: #a0522d;">audiosink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"autoaudiosink"</span>, <span style="color: #8b2252;">"audio-output"</span>)
+
+        <span style="color: #a020f0;">self</span>.player.add(source)
+        <span style="color: #a020f0;">self</span>.player.add(demuxer)
+        <span style="color: #a020f0;">self</span>.player.add(<span style="color: #a020f0;">self</span>.audio_decoder)
+        <span style="color: #a020f0;">self</span>.player.add(audioconv)
+        <span style="color: #a020f0;">self</span>.player.add(audiosink)
+
+        source.link(demuxer)
+        <span style="color: #a020f0;">self</span>.audio_decoder.link(audioconv)
+        audioconv.link(audiosink)
+
+        <span style="color: #a0522d;">bus</span> = <span style="color: #a020f0;">self</span>.player.get_bus()
+        bus.add_signal_watch()
+        bus.connect(<span style="color: #8b2252;">"message"</span>, <span style="color: #a020f0;">self</span>.on_message)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start_stop</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a020f0;">if</span> <span style="color: #a020f0;">self</span>.button.get_label() == <span style="color: #8b2252;">"Start"</span>:
+            <span style="color: #a0522d;">filepath</span> = <span style="color: #a020f0;">self</span>.entry.get_text().strip()
+            <span style="color: #a020f0;">if</span> os.path.isfile(filepath):
+                <span style="color: #a0522d;">filepath</span> = os.path.realpath(filepath)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Stop"</span>)
+                <span style="color: #a020f0;">self</span>.player.get_by_name(<span style="color: #8b2252;">"file-source"</span>).set_property(<span style="color: #8b2252;">"location"</span>, filepath)
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PLAYING)
+            <span style="color: #a020f0;">else</span>:
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a0522d;">t</span> = message.<span style="color: #483d8b;">type</span>
+        <span style="color: #a020f0;">if</span> t == Gst.MessageType.EOS:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">elif</span> t == Gst.MessageType.ERROR:
+            <span style="color: #a0522d;">err</span>, debug = message.parse_error()
+            <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Error: %s"</span> % err, debug
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">demuxer_callback</span>(<span style="color: #a020f0;">self</span>, demuxer, pad):
+        adec_pad = <span style="color: #a020f0;">self</span>.audio_decoder.get_static_pad(<span style="color: #8b2252;">"sink"</span>)
+        pad.link(adec_pad)
+
+
+GObject.threads_init()
+Gst.init(<span style="color: #008b8b;">None</span>)        
+GTK_Main()
+Gtk.main()
+</pre>
+</div>
+
+
+<p>
+Now after reading through these four chapters you could need a break. Happy hacking and stay tuned for more interesting chapters to come.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Seeking</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+Seeking in Gstreamer is done with the <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-seek"><code>seek()</code></a> and <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-seek-simple"><code>seek_simple()</code></a> methods. To be able to seek you will also need to tell Gstreamer what kind of seek it should do. In the following example we will use a <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstInfo.html#GST-TIME-FORMAT:CAPS"><code>Gst.Format.TIME</code></a> format constant which will, as you may guess, do a time seek. We will also use the <code>query_duration()</code> and <code>query_position()</code> methods to get the file length and how long the file has currently played. Gstreamer uses nanoseconds by default so you have to adjust to that.
+</p>
+
+<p>
+In this next example we take the Vorbis-Player from example 4.1 and update it with some more stuff so it's able to seek and show duration and position.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> os, thread, time
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">"Gst"</span>, <span style="color: #8b2252;">"1.0"</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GObject, Gtk, Gdk
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">GTK_Main</span>:
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">window</span> = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        window.set_title(<span style="color: #8b2252;">"Vorbis-Player"</span>)
+        window.set_default_size(500, -1)
+        window.connect(<span style="color: #8b2252;">"destroy"</span>, Gtk.main_quit, <span style="color: #8b2252;">"WM destroy"</span>)
+        <span style="color: #a0522d;">vbox</span> = Gtk.VBox()
+        window.add(vbox)
+        <span style="color: #a020f0;">self</span>.entry = Gtk.Entry()
+        vbox.pack_start(<span style="color: #a020f0;">self</span>.entry, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">False</span>, 0)
+        <span style="color: #a0522d;">hbox</span> = Gtk.HBox()
+        vbox.add(hbox)
+        <span style="color: #a0522d;">buttonbox</span> = Gtk.HButtonBox()
+        hbox.pack_start(buttonbox, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">False</span>, 0)
+        <span style="color: #a0522d;">rewind_button</span> = Gtk.Button(<span style="color: #8b2252;">"Rewind"</span>)
+        rewind_button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.rewind_callback)
+        buttonbox.add(rewind_button)
+        <span style="color: #a020f0;">self</span>.button = Gtk.Button(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">self</span>.button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.start_stop)
+        buttonbox.add(<span style="color: #a020f0;">self</span>.button)
+        <span style="color: #a0522d;">forward_button</span> = Gtk.Button(<span style="color: #8b2252;">"Forward"</span>)
+        forward_button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.forward_callback)
+        buttonbox.add(forward_button)
+        <span style="color: #a020f0;">self</span>.time_label = Gtk.Label()
+        <span style="color: #a020f0;">self</span>.time_label.set_text(<span style="color: #8b2252;">"00:00 / 00:00"</span>)
+        hbox.add(<span style="color: #a020f0;">self</span>.time_label)
+        window.show_all()
+
+        <span style="color: #a020f0;">self</span>.player = Gst.Pipeline.new(<span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a0522d;">source</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"filesrc"</span>, <span style="color: #8b2252;">"file-source"</span>)
+        <span style="color: #a0522d;">demuxer</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"oggdemux"</span>, <span style="color: #8b2252;">"demuxer"</span>)
+        demuxer.connect(<span style="color: #8b2252;">"pad-added"</span>, <span style="color: #a020f0;">self</span>.demuxer_callback)
+        <span style="color: #a020f0;">self</span>.audio_decoder = Gst.ElementFactory.make(<span style="color: #8b2252;">"vorbisdec"</span>, <span style="color: #8b2252;">"vorbis-decoder"</span>)
+        <span style="color: #a0522d;">audioconv</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"audioconvert"</span>, <span style="color: #8b2252;">"converter"</span>)
+        <span style="color: #a0522d;">audiosink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"autoaudiosink"</span>, <span style="color: #8b2252;">"audio-output"</span>)
+
+        <span style="color: #a020f0;">for</span> ele <span style="color: #a020f0;">in</span> [source, demuxer, <span style="color: #a020f0;">self</span>.audio_decoder, audioconv, audiosink]:
+            <span style="color: #a020f0;">self</span>.player.add(ele)
+        source.link(demuxer)
+        <span style="color: #a020f0;">self</span>.audio_decoder.link(audioconv)
+        audioconv.link(audiosink)
+
+        <span style="color: #a0522d;">bus</span> = <span style="color: #a020f0;">self</span>.player.get_bus()
+        bus.add_signal_watch()
+        bus.connect(<span style="color: #8b2252;">"message"</span>, <span style="color: #a020f0;">self</span>.on_message)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start_stop</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a020f0;">if</span> <span style="color: #a020f0;">self</span>.button.get_label() == <span style="color: #8b2252;">"Start"</span>:
+            <span style="color: #a0522d;">filepath</span> = <span style="color: #a020f0;">self</span>.entry.get_text().strip()
+            <span style="color: #a020f0;">if</span> os.path.isfile(filepath):
+                <span style="color: #a0522d;">filepath</span> = os.path.realpath(filepath)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Stop"</span>)
+                <span style="color: #a020f0;">self</span>.player.get_by_name(<span style="color: #8b2252;">"file-source"</span>).set_property(<span style="color: #8b2252;">"location"</span>, filepath)
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PLAYING)
+                <span style="color: #a020f0;">self</span>.play_thread_id = thread.start_new_thread(<span style="color: #a020f0;">self</span>.play_thread, ())
+            <span style="color: #a020f0;">else</span>:
+                <span style="color: #a020f0;">self</span>.play_thread_id = <span style="color: #008b8b;">None</span>
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+                <span style="color: #a020f0;">self</span>.time_label.set_text(<span style="color: #8b2252;">"00:00 / 00:00"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">play_thread</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">play_thread_id</span> = <span style="color: #a020f0;">self</span>.play_thread_id
+        Gdk.threads_enter()
+        <span style="color: #a020f0;">self</span>.time_label.set_text(<span style="color: #8b2252;">"00:00 / 00:00"</span>)
+        Gdk.threads_leave()
+
+        <span style="color: #a020f0;">while</span> play_thread_id == <span style="color: #a020f0;">self</span>.play_thread_id:
+            <span style="color: #a020f0;">try</span>:
+                time.sleep(0.2)
+                dur_int = <span style="color: #a020f0;">self</span>.player.query_duration(Gst.Format.TIME, <span style="color: #008b8b;">None</span>)[0]
+                <span style="color: #a020f0;">if</span> dur_int == -1:
+                    <span style="color: #a020f0;">continue</span>
+                dur_str = <span style="color: #a020f0;">self</span>.convert_ns(dur_int)
+                Gdk.threads_enter()
+                <span style="color: #a020f0;">self</span>.time_label.set_text(<span style="color: #8b2252;">"00:00 / "</span> + dur_str)
+                Gdk.threads_leave()
+                <span style="color: #a020f0;">break</span>
+            <span style="color: #a020f0;">except</span>:
+                <span style="color: #a020f0;">pass</span>
+
+        time.sleep(0.2)
+        <span style="color: #a020f0;">while</span> play_thread_id == <span style="color: #a020f0;">self</span>.play_thread_id:
+            pos_int = <span style="color: #a020f0;">self</span>.player.query_position(Gst.Format.TIME, <span style="color: #008b8b;">None</span>)[0]
+            pos_str = <span style="color: #a020f0;">self</span>.convert_ns(pos_int)
+            <span style="color: #a020f0;">if</span> play_thread_id == <span style="color: #a020f0;">self</span>.play_thread_id:
+                Gdk.threads_enter()
+                <span style="color: #a020f0;">self</span>.time_label.set_text(pos_str + <span style="color: #8b2252;">" / "</span> + dur_str)
+                Gdk.threads_leave()
+            time.sleep(1)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        t = message.<span style="color: #483d8b;">type</span>
+        <span style="color: #a020f0;">if</span> t == Gst.MessageType.EOS:
+            <span style="color: #a020f0;">self</span>.play_thread_id = <span style="color: #008b8b;">None</span>
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+            <span style="color: #a020f0;">self</span>.time_label.set_text(<span style="color: #8b2252;">"00:00 / 00:00"</span>)
+        <span style="color: #a020f0;">elif</span> t == Gst.MessageType.ERROR:
+            <span style="color: #a0522d;">err</span>, debug = message.parse_error()
+            <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Error: %s"</span> % err, debug
+            <span style="color: #a020f0;">self</span>.play_thread_id = <span style="color: #008b8b;">None</span>
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+            <span style="color: #a020f0;">self</span>.time_label.set_text(<span style="color: #8b2252;">"00:00 / 00:00"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">demuxer_callback</span>(<span style="color: #a020f0;">self</span>, demuxer, pad):
+        adec_pad = <span style="color: #a020f0;">self</span>.audio_decoder.get_static_pad(<span style="color: #8b2252;">"sink"</span>)
+        pad.link(adec_pad)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">rewind_callback</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a0522d;">rc</span>, pos_int = <span style="color: #a020f0;">self</span>.player.query_position(Gst.Format.TIME)
+        seek_ns = pos_int - 10 * 1000000000
+        <span style="color: #a020f0;">if</span> seek_ns &lt; 0:
+            seek_ns = 0
+        <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">'Backward: %d ns -&gt; %d ns'</span> % (pos_int, seek_ns)
+        <span style="color: #a020f0;">self</span>.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">forward_callback</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a0522d;">rc</span>, pos_int = <span style="color: #a020f0;">self</span>.player.query_position(Gst.Format.TIME)
+        seek_ns = pos_int + 10 * 1000000000
+        <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">'Forward: %d ns -&gt; %d ns'</span> % (pos_int, seek_ns)
+        <span style="color: #a020f0;">self</span>.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">convert_ns</span>(<span style="color: #a020f0;">self</span>, t):
+        <span style="color: #b22222;"># </span><span style="color: #b22222;">This method was submitted by Sam Mason.</span>
+        <span style="color: #b22222;"># </span><span style="color: #b22222;">It's much shorter than the original one.</span>
+        <span style="color: #a0522d;">s</span>,ns = <span style="color: #483d8b;">divmod</span>(t, 1000000000)
+        <span style="color: #a0522d;">m</span>,s = <span style="color: #483d8b;">divmod</span>(s, 60)
+
+        <span style="color: #a020f0;">if</span> m &lt; 60:
+            <span style="color: #a020f0;">return</span> <span style="color: #8b2252;">"%02i:%02i"</span> %(m,s)
+        <span style="color: #a020f0;">else</span>:
+            <span style="color: #a0522d;">h</span>,m = <span style="color: #483d8b;">divmod</span>(m, 60)
+            <span style="color: #a020f0;">return</span> <span style="color: #8b2252;">"%i:%02i:%02i"</span> %(h,m,s)
+
+GObject.threads_init()
+Gst.init(<span style="color: #008b8b;">None</span>)        
+GTK_Main()
+Gtk.main()
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Jens Persson and Ruben Gonzalez and Brett Viren</p>
+<p class="date">Created: 2015-01-03 Sat 14:58</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.5h)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

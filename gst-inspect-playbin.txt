@@ -1,0 +1,213 @@
+Factory Details:
+  Rank                     none (0)
+  Long-name                Player Bin 2
+  Klass                    Generic/Bin/Player
+  Description              Autoplug and play media from an uri
+  Author                   Wim Taymans <wim.taymans@gmail.com>
+
+Plugin Details:
+  Name                     playback
+  Description              various playback elements
+  Filename                 /usr/lib/x86_64-linux-gnu/gstreamer-1.0/libgstplayback.so
+  Version                  1.2.4
+  License                  LGPL
+  Source module            gst-plugins-base
+  Source release date      2014-04-18
+  Binary package           GStreamer Base Plugins (Ubuntu)
+  Origin URL               https://launchpad.net/distros/ubuntu/+source/gst-plugins-base1.0
+
+GObject
+ +----GInitiallyUnowned
+       +----GstObject
+             +----GstElement
+                   +----GstBin
+                         +----GstPipeline
+                               +----GstPlayBin
+
+Implemented Interfaces:
+  GstChildProxy
+  GstStreamVolume
+  GstVideoOverlay
+  GstNavigation
+  GstColorBalance
+
+Pad Templates:
+  none
+
+Element Flags:
+  no flags set
+
+Bin Flags:
+  no flags set
+
+Element Implementation:
+  Has change_state() function: gst_play_bin_change_state
+
+Element has no clocking capabilities.
+Element has no indexing capabilities.
+Element has no URI handling capabilities.
+
+Pads:
+  none
+
+Element Properties:
+  name                : The name of the object
+                        flags: readable, writable
+                        String. Default: "playbin0"
+  parent              : The parent of the object
+                        flags: readable, writable
+                        Object of type "GstObject"
+  async-handling      : The bin will handle Asynchronous state changes
+                        flags: readable, writable
+                        Boolean. Default: false
+  message-forward     : Forwards all children messages
+                        flags: readable, writable
+                        Boolean. Default: false
+  delay               : Expected delay needed for elements to spin up to PLAYING in nanoseconds
+                        flags: readable, writable
+                        Unsigned Integer64. Range: 0 - 18446744073709551615 Default: 0 
+  auto-flush-bus      : Whether to automatically flush the pipeline's bus when going from READY into NULL state
+                        flags: readable, writable
+                        Boolean. Default: true
+  uri                 : URI of the media to play
+                        flags: readable, writable
+                        String. Default: null
+  current-uri         : The currently playing URI
+                        flags: readable
+                        String. Default: null
+  suburi              : Optional URI of a subtitle
+                        flags: readable, writable
+                        String. Default: null
+  current-suburi      : The currently playing URI of a subtitle
+                        flags: readable
+                        String. Default: null
+  source              : Source element
+                        flags: readable
+                        Object of type "GstElement"
+  flags               : Flags to control behaviour
+                        flags: readable, writable
+                        Flags "GstPlayFlags" Default: 0x00000617, "soft-colorbalance+deinterlace+soft-volume+text+audio+video"
+                           (0x00000001): video            - Render the video stream
+                           (0x00000002): audio            - Render the audio stream
+                           (0x00000004): text             - Render subtitles
+                           (0x00000008): vis              - Render visualisation when no video is present
+                           (0x00000010): soft-volume      - Use software volume
+                           (0x00000020): native-audio     - Only use native audio formats
+                           (0x00000040): native-video     - Only use native video formats
+                           (0x00000080): download         - Attempt progressive download buffering
+                           (0x00000100): buffering        - Buffer demuxed/parsed data
+                           (0x00000200): deinterlace      - Deinterlace video if necessary
+                           (0x00000400): soft-colorbalance - Use software color balance
+  n-video             : Total number of video streams
+                        flags: readable
+                        Integer. Range: 0 - 2147483647 Default: 0 
+  current-video       : Currently playing video stream (-1 = auto)
+                        flags: readable, writable
+                        Integer. Range: -1 - 2147483647 Default: -1 
+  n-audio             : Total number of audio streams
+                        flags: readable
+                        Integer. Range: 0 - 2147483647 Default: 0 
+  current-audio       : Currently playing audio stream (-1 = auto)
+                        flags: readable, writable
+                        Integer. Range: -1 - 2147483647 Default: -1 
+  n-text              : Total number of text streams
+                        flags: readable
+                        Integer. Range: 0 - 2147483647 Default: 0 
+  current-text        : Currently playing text stream (-1 = auto)
+                        flags: readable, writable
+                        Integer. Range: -1 - 2147483647 Default: -1 
+  subtitle-encoding   : Encoding to assume if input subtitles are not in UTF-8 encoding. If not set, the GST_SUBTITLE_ENCODING environment variable will be checked for an encoding to use. If that is not set either, ISO-8859-15 will be assumed.
+                        flags: readable, writable
+                        String. Default: null
+  audio-sink          : the audio output element to use (NULL = default sink)
+                        flags: readable, writable
+                        Object of type "GstElement"
+  video-sink          : the video output element to use (NULL = default sink)
+                        flags: readable, writable
+                        Object of type "GstElement"
+  vis-plugin          : the visualization element to use (NULL = default)
+                        flags: readable, writable
+                        Object of type "GstElement"
+  text-sink           : the text output element to use (NULL = default subtitleoverlay)
+                        flags: readable, writable
+                        Object of type "GstElement"
+  video-stream-combiner: Current video stream combiner (NULL = input-selector)
+                        flags: readable, writable
+                        Object of type "GstElement"
+  audio-stream-combiner: Current audio stream combiner (NULL = input-selector)
+                        flags: readable, writable
+                        Object of type "GstElement"
+  text-stream-combiner: Current text stream combiner (NULL = input-selector)
+                        flags: readable, writable
+                        Object of type "GstElement"
+  volume              : The audio volume, 1.0=100%
+                        flags: readable, writable
+                        Double. Range:               0 -              10 Default:               1 
+  mute                : Mute the audio channel without changing the volume
+                        flags: readable, writable
+                        Boolean. Default: false
+  sample              : The last sample (NULL = no video available)
+                        flags: readable
+                        Boxed pointer of type "GstSample"
+  subtitle-font-desc  : Pango font description of font to be used for subtitle rendering
+                        flags: writable
+                        String. Default: null Write only
+  connection-speed    : Network connection speed in kbps (0 = unknown)
+                        flags: readable, writable
+                        Unsigned Integer64. Range: 0 - 18446744073709551 Default: 0 
+  buffer-size         : Buffer size when buffering network streams
+                        flags: readable, writable
+                        Integer. Range: -1 - 2147483647 Default: -1 
+  buffer-duration     : Buffer duration when buffering network streams
+                        flags: readable, writable
+                        Integer64. Range: -1 - 9223372036854775807 Default: -1 
+  av-offset           : The synchronisation offset between audio and video in nanoseconds
+                        flags: readable, writable
+                        Integer64. Range: -9223372036854775808 - 9223372036854775807 Default: 0 
+  ring-buffer-max-size: Max. amount of data in the ring buffer (bytes, 0 = ring buffer disabled)
+                        flags: readable, writable
+                        Unsigned Integer64. Range: 0 - 4294967295 Default: 0 
+  force-aspect-ratio  : When enabled, scaling will respect original aspect ratio
+                        flags: readable, writable
+                        Boolean. Default: true
+
+Element Signals:
+  "about-to-finish" :  void user_function (GstElement* object,
+                                           gpointer user_data);
+  "video-changed" :  void user_function (GstElement* object,
+                                         gpointer user_data);
+  "audio-changed" :  void user_function (GstElement* object,
+                                         gpointer user_data);
+  "text-changed" :  void user_function (GstElement* object,
+                                        gpointer user_data);
+  "video-tags-changed" :  void user_function (GstElement* object,
+                                              gint arg0,
+                                              gpointer user_data);
+  "audio-tags-changed" :  void user_function (GstElement* object,
+                                              gint arg0,
+                                              gpointer user_data);
+  "text-tags-changed" :  void user_function (GstElement* object,
+                                             gint arg0,
+                                             gpointer user_data);
+  "source-setup" :  void user_function (GstElement* object,
+                                        GstElement* arg0,
+                                        gpointer user_data);
+
+Element Actions:
+  "get-video-tags" :  GstTagList * user_function (GstElement* object,
+                                                  gint arg0);
+  "get-audio-tags" :  GstTagList * user_function (GstElement* object,
+                                                  gint arg0);
+  "get-text-tags" :  GstTagList * user_function (GstElement* object,
+                                                 gint arg0);
+  "convert-sample" :  GstSample * user_function (GstElement* object,
+                                                 GstCaps* arg0);
+  "get-video-pad" :  GstPad * user_function (GstElement* object,
+                                             gint arg0);
+  "get-audio-pad" :  GstPad * user_function (GstElement* object,
+                                             gint arg0);
+  "get-text-pad" :  GstPad * user_function (GstElement* object,
+                                            gint arg0);
+
+Children:
+  playsink

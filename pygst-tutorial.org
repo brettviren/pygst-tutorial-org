@@ -1,0 +1,945 @@
+#+TITLE: Python GStreamer Tutorial
+#+AUTHOR: Jens Persson and Ruben Gonzalez and Brett Viren
+#+VERSION: 1.0
+#+DESCRIPTION: Rescued by from Internet death by [[https://github.com/rubenrua/GstreamerCodeSnippets][rubenrua]]
+
+
+This tutorial aims at giving a brief introduction to the GStreamer multimedia framework.
+
+* Meta
+
+Diagrams use solid line rectangles to indicate "elements", rounded solid line rectangles to indicate "bins" (and "pipelines"), rounded dashed rectangles to indicate "pads".
+
+* Introduction
+
+This tutorial is meant to be a quick way to get to know more about Gstreamer but it'll take some time to write it though because we don't know it ourselves ... yet. We're usually using GNU/Linux and GTK in the examples but we try to keep the GUI code to an absolute minimum so it should not get in the way. Just remember that Gstreamer depends heavily on Glib so you must make sure that the [[http://pygstdocs.berlios.de/pygobject-reference/class-glibmainloop.html][Glib Mainloop]] is running if you want to catch events on the bus. We take for granted that you are at least a fairly descent Python coder. For problems related to the Python language we redirect you over to [[http://python.org/doc][Online Python docs]].
+
+As you may see this tutorial is far from done and we are always looking for new people to join this project. If you want to write a chapter just do it and submit it to some of the people having commiting access to the source. You find us [[http://developer.berlios.de/projects/pygstdocs/][here]] (ed: dead). TIA
+
+There are also some example coding distributed with the PyGST source which you may browse [[http://cgit.freedesktop.org/gstreamer/gst-python/tree/examples][here]].
+
+Gstreamer comes with a few handy CLI programs that helps you find and try out what you need in a very fast and convenient way. With "gst-inspect" you can track highlevel elements which are shipped with the various plugins packages.
+
+#+BEGIN_SRC sh :eval no
+  man gst-inspect-1.0
+#+END_SRC
+
+If you are looking for an element but you don't know its name you can use it with grep. Getting the elements that handles ie mp3 is done like this:
+
+#+BEGIN_SRC sh :results output text :exports both
+  gst-inspect-1.0 | grep mp3 | sort | head -3
+#+END_SRC
+
+#+RESULTS:
+: flump3dec:  flump3dec: Fluendo MP3 Decoder (liboil build)
+: lame:  lamemp3enc: L.A.M.E. mp3 encoder
+: libav:  avdec_mp3adufloat: libav ADU (Application Data Unit) MP3 (MPEG audio layer 3) decoder
+
+
+Playbin is an autoplugger element which usually plays anything you throw at it, if you have the appropriate plugins installed.
+
+#+BEGIN_SRC sh :results none :exports code
+   gst-inspect-1.0 playbin > gst-inspect-playbin.txt
+#+END_SRC
+
+Browse example output [[./gst-inspect-playbin.txt][here]]. 
+
+You can also run pipelines directly in a terminal with "gst-launch":
+
+#+BEGIN_SRC sh :eval no
+  man gst-launch-1.0
+#+END_SRC
+
+For playing a file with playbin:
+
+#+BEGIN_SRC sh :eval no
+  gst-launch-1.0 playbin uri=http://docs.gstreamer.com/media/sintel_trailer-480p.webm
+#+END_SRC
+
+It's also possible to link elements together with "!":
+
+#+BEGIN_SRC sh :eval no
+  gst-launch-1.0 audiotestsrc ! alsasink
+#+END_SRC
+
+You may also make different streams in the pipeline:
+
+#+BEGIN_SRC sh :eval no
+  gst-launch-1.0 audiotestsrc ! alsasink videotestsrc ! xvimagesink
+#+END_SRC
+
+Or, you can make a single frame JPEG
+
+#+BEGIN_SRC sh :results none :exports code
+  gst-launch-1.0 videotestsrc num-buffers=1 ! jpegenc ! filesink location=videotestsrc-frame.jpg
+#+END_SRC
+
+[[./videotestsrc-frame.jpg]]
+
+If you are using the "name" property you may use the same element more than once. Just put a "." after its name, eg with oggmux here.
+
+#+BEGIN_SRC sh :eval no
+  gst-launch-1.0 audiotestsrc ! vorbisenc ! oggmux name=mux ! filesink location=file.ogg videotestsrc ! theoraenc ! mux.
+#+END_SRC
+
+In the next chapter we will show you more examples with Playbin.
+
+* Playbin
+
+A playbin is a highlevel, automatic, audio and video player. You create a playbin object with:
+
+#+BEGIN_SRC python :results output
+  import gi
+  gi.require_version('Gst', '1.0')
+  from gi.repository import Gst
+  Gst.init(None)
+  # ...
+  my_playbin = Gst.ElementFactory.make("playbin", None)
+  assert my_playbin
+  print my_playbin
+#+END_SRC
+
+#+RESULTS:
+: <__main__.GstPlayBin object at 0x7fd8e88e6aa0 (GstPlayBin at 0x1c0cf00)>
+
+To get information about a playbin run:
+
+#+BEGIN_SRC sh :eval no
+  gst-inspect-0.10 playbin
+#+END_SRC
+
+This figure shows how playbin is built internally. The "optional stuff" are things that could be platform specific or things that you may set with properties.
+
+
+#+BEGIN_SRC ditaa :file playbin-block.png
+  
+         /--------------------------------------------------------------------\
+         |                           +----------------+   /---------------\   |
+         |                           :                |   |               |   |
+         |                       +->-+ optional stuff +->-+ autoaudiosink +----->- Audio Output
+         |   /----------------\  |   |                |   |               |   |
+         |   |                +--+   +----------------+   \---------------/   |
+  uri ----->-+  uridecodebin  |                                               |
+         |   |                +--+   +----------------+   /---------------\   |
+         |   \----------------/  |   :                |   |               |   |
+         |                       +->-+ optional stuff +->-+ autovideosink +----->- Video Output
+         |                           |                |   |               |   |
+         | playbin                   +----------------+   \---------------/   |
+         \--------------------------------------------------------------------/
+#+END_SRC
+
+#+RESULTS:
+[[file:playbin-block.png]]
+
+
+  
+The "*uri*" property should take any possible protocol supported by your Gstreamer plugins. One nice feature is that you may switch the sinks out for your own bins as shown below. Playbin always tries to set up the best possible pipeline for your specific environment so if you don't need any special features that are not implemented in playbin, it should in most cases just work "out of the box". Ok, time for a few examples.
+
+This first example is just a simple audio player, insert a file with absolute path and it'll play.  It is available as [[./playbin-example-audio.py]].  You can run it like:
+
+#+BEGIN_SRC sh :eval no
+  python playbin-example-audio.py
+#+END_SRC
+
+It will open a small window with a text entry.  Enter the full path to some audio file and click "Start".
+
+#+BEGIN_SRC python :eval no :tangle playbin-example-audio.py :results none
+  #!/usr/bin/env python
+  
+  import sys, os
+  import gi
+  gi.require_version('Gst', '1.0')
+  from gi.repository import Gst, GObject, Gtk
+  
+  class GTK_Main(object):
+      
+      def __init__(self):
+          window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+          window.set_title("Audio-Player")
+          window.set_default_size(300, -1)
+          window.connect("destroy", Gtk.main_quit, "WM destroy")
+          vbox = Gtk.VBox()
+          window.add(vbox)
+          self.entry = Gtk.Entry()
+          vbox.pack_start(self.entry, False, True, 0)
+          self.button = Gtk.Button("Start")
+          self.button.connect("clicked", self.start_stop)
+          vbox.add(self.button)
+          window.show_all()
+  
+          self.player = Gst.ElementFactory.make("playbin", "player")
+          fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
+          self.player.set_property("video-sink", fakesink)
+          bus = self.player.get_bus()
+          bus.add_signal_watch()
+          bus.connect("message", self.on_message)
+          
+      def start_stop(self, w):
+          if self.button.get_label() == "Start":
+              filepath = self.entry.get_text().strip()
+              if os.path.isfile(filepath):
+                  filepath = os.path.realpath(filepath)
+                  self.button.set_label("Stop")
+                  self.player.set_property("uri", "file://" + filepath)
+                  self.player.set_state(Gst.State.PLAYING)
+              else:
+                  self.player.set_state(Gst.State.NULL)
+                  self.button.set_label("Start")
+  
+      def on_message(self, bus, message):
+          t = message.type
+          if t == Gst.MessageType.EOS:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+          elif t == Gst.MessageType.ERROR:
+              self.player.set_state(Gst.State.NULL)
+              err, debug = message.parse_error()
+              print "Error: %s" % err, debug
+              self.button.set_label("Start")
+  
+  
+  Gst.init(None)
+  GTK_Main()
+  GObject.threads_init()
+  Gtk.main()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+A playbin plugs both audio and video streams automagically so I've switched the videosink out to a fakesink element which is Gstreamer's answer to /dev/null. If you want to enable video playback just comment out the following lines:
+
+#+BEGIN_SRC python :eval no
+  fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
+  self.player.set_property("video-sink", fakesink)
+#+END_SRC
+
+If you want to show the video output in a specified window you'll have to use the =enable_sync_message_emission()= method on the bus. Here is an example with the video window embedded in the program.
+
+#+BEGIN_SRC python :tangle playbin-example-video.py :results none
+  #!/usr/bin/env python
+  
+  import sys, os
+  import gi
+  gi.require_version('Gst', '1.0')
+  from gi.repository import Gst, GObject, Gtk
+  
+  # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
+  from gi.repository import GdkX11, GstVideo
+  
+  class GTK_Main(object):
+        
+      def __init__(self):
+          window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+          window.set_title("Video-Player")
+          window.set_default_size(500, 400)
+          window.connect("destroy", Gtk.main_quit, "WM destroy")
+          vbox = Gtk.VBox()
+          window.add(vbox)
+          hbox = Gtk.HBox()
+          vbox.pack_start(hbox, False, False, 0)
+          self.entry = Gtk.Entry()
+          hbox.add(self.entry)
+          self.button = Gtk.Button("Start")
+          hbox.pack_start(self.button, False, False, 0)
+          self.button.connect("clicked", self.start_stop)
+          self.movie_window = Gtk.DrawingArea()
+          vbox.add(self.movie_window)
+          window.show_all()
+          
+          self.player = Gst.ElementFactory.make("playbin", "player")
+          bus = self.player.get_bus()
+          bus.add_signal_watch()
+          bus.enable_sync_message_emission()
+          bus.connect("message", self.on_message)
+          bus.connect("sync-message::element", self.on_sync_message)
+          
+      def start_stop(self, w):
+          if self.button.get_label() == "Start":
+              filepath = self.entry.get_text().strip()
+              if os.path.isfile(filepath):
+                  filepath = os.path.realpath(filepath)
+                  self.button.set_label("Stop")
+                  self.player.set_property("uri", "file://" + filepath)
+                  self.player.set_state(Gst.State.PLAYING)
+              else:
+                  self.player.set_state(Gst.State.NULL)
+                  self.button.set_label("Start")
+                  
+      def on_message(self, bus, message):
+          t = message.type
+          if t == Gst.MessageType.EOS:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+          elif t == Gst.MessageType.ERROR:
+              self.player.set_state(Gst.State.NULL)
+              err, debug = message.parse_error()
+              print "Error: %s" % err, debug
+              self.button.set_label("Start")
+              
+      def on_sync_message(self, bus, message):
+          if message.get_structure().get_name() == 'prepare-window-handle':
+              imagesink = message.src
+              imagesink.set_property("force-aspect-ratio", True)
+              imagesink.set_window_handle(self.movie_window.get_property('window').get_xid())
+  
+  
+  GObject.threads_init()
+  Gst.init(None)        
+  GTK_Main()
+  Gtk.main()
+#+END_SRC
+
+And just to make things a little more complicated you can switch the playbins videosink to a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html][=Gst.Bin=]] with a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstGhostPad.html][=Gst.GhostPad=]] on it. Here's an example with a timeoverlay.
+
+#+BEGIN_SRC python :eval no
+  bin = Gst.Bin.new("my-bin")
+  timeoverlay = Gst.ElementFactory.make("timeoverlay")
+  bin.add(timeoverlay)
+  pad = timeoverlay.get_static_pad("video_sink")
+  ghostpad = Gst.GhostPad.new("sink", pad)
+  bin.add_pad(ghostpad)
+  videosink = Gst.ElementFactory.make("autovideosink")
+  bin.add(videosink)
+  timeoverlay.link(videosink)
+  self.player.set_property("video-sink", bin)
+#+END_SRC
+
+Add that code to the example above and you'll get a timeoverlay too. We'll talk more about ghostpads later.
+
+On peoples requests we add a CLI example which plays music, just run it with:
+
+#+BEGIN_SRC sh :eval no
+  python cliplayer.py /path/to/file1.mp3 /path/to/file2.ogg
+#+END_SRC
+
+#+BEGIN_SRC python :tangle playbin-example-cliplayer.py :results none
+  
+  #!/usr/bin/env python
+  
+  import sys, os, time, thread
+  import gi
+  gi.require_version('Gst', '1.0')
+  from gi.repository import Gst, GLib, GObject
+  
+  class CLI_Main(object):
+        
+      def __init__(self):
+          self.player = Gst.ElementFactory.make("playbin", "player")
+          fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
+          self.player.set_property("video-sink", fakesink)
+          bus = self.player.get_bus()
+          bus.add_signal_watch()
+          bus.connect("message", self.on_message)
+              
+      def on_message(self, bus, message):
+          t = message.type
+          if t == Gst.MessageType.EOS:
+              self.player.set_state(Gst.State.NULL)
+              self.playmode = False
+          elif t == Gst.MessageType.ERROR:
+              self.player.set_state(Gst.State.NULL)
+              err, debug = message.parse_error()
+              print "Error: %s" % err, debug
+              self.playmode = False
+  
+      def start(self):
+          for filepath in sys.argv[1:]:
+              if os.path.isfile(filepath):
+                  filepath = os.path.realpath(filepath)
+                  self.playmode = True
+                  self.player.set_property("uri", "file://" + filepath)
+                  self.player.set_state(Gst.State.PLAYING)
+                  while self.playmode:
+                      time.sleep(1)
+          time.sleep(1)
+          loop.quit()
+  
+  GObject.threads_init()
+  Gst.init(None)        
+  mainclass = CLI_Main()
+  thread.start_new_thread(mainclass.start, ())
+  loop = GLib.MainLoop()
+  loop.run()
+    
+#+END_SRC
+
+
+A playbin implements a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPipeline.html][=Gst.Pipeline=]] element and that's what the next chapter is going to tell you more about.
+
+* Pipeline
+
+A [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPipeline.html][=Gst.Pipeline=]] is a top-level bin with its own bus and clock. If your program only contains one bin-like object, this is what you're looking for. You create a pipeline object with:
+
+#+BEGIN_SRC python :eval no
+  my_pipeline = Gst.Pipeline("my-pipeline")
+#+END_SRC
+
+A pipeline is just a "container" where you can put other objects and when everything is in place and the file to play is specified you just set the pipelines state to [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html#GstBin.notes][=Gst.State.PLAYING=]] and there should be multimedia coming out of it.
+
+In this first example I have taken the Audio-Player from the Playbin chapter and switched the playbin out for my own mp3 decoding capable pipeline. You can also testdrive pipelines with a program called gst-launch directly in a shell. That is, the next example below would look like this:
+
+#+BEGIN_SRC sh :eval no
+  gst-launch-1.0 filesrc location=file.mp3 ! mad ! audioconvert ! alsasink
+#+END_SRC
+
+Conceptually the pipeline is like:
+
+#+BEGIN_SRC ditaa :file pipeline-block.png
+    
+                                 Example Gst.Pipeline 
+    
+           /---------------------------------------------------------------------\
+           |   +---------+     +-------+     +--------------+     +----------+   |
+           |   |         |     |       |     |              |     |          |   |
+  file.mp3--->-| filesrc +-->--+  mad  +-->--+ audioconvert +-->--+ alsasink +---->-Audio Output
+           |   |         |     |       |     |              |     |          |   |
+           |   +---------+     +-------+     +--------------+     +----------+   |
+           \---------------------------------------------------------------------/
+  
+#+END_SRC
+
+#+RESULTS:
+[[file:pipeline-block.png]]
+
+and the source:
+
+#+BEGIN_SRC python :tangle pipeline-example.py :results none
+  
+  #!/usr/bin/env python
+  
+  import sys, os
+  import gi
+  gi.require_version('Gst', '1.0')
+  from gi.repository import Gst, GObject, Gtk
+  
+  class GTK_Main(object):
+      
+      def __init__(self):
+          window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+          window.set_title("MP3-Player")
+          window.set_default_size(400, 200)
+          window.connect("destroy", Gtk.main_quit, "WM destroy")
+          vbox = Gtk.VBox()
+          window.add(vbox)
+          self.entry = Gtk.Entry()
+          vbox.pack_start(self.entry, False, True, 0)
+          self.button = Gtk.Button("Start")
+          self.button.connect("clicked", self.start_stop)
+          vbox.add(self.button)
+          window.show_all()
+          
+          self.player = Gst.Pipeline.new("player")
+          source = Gst.ElementFactory.make("filesrc", "file-source")
+          decoder = Gst.ElementFactory.make("mad", "mp3-decoder")
+          conv = Gst.ElementFactory.make("audioconvert", "converter")
+          sink = Gst.ElementFactory.make("alsasink", "alsa-output")
+          
+          self.player.add(source)
+          self.player.add(decoder)
+          self.player.add(conv)
+          self.player.add(sink)
+          source.link(decoder)
+          decoder.link(conv)
+          conv.link(sink)
+          
+          bus = self.player.get_bus()
+          bus.add_signal_watch()
+          bus.connect("message", self.on_message)
+  
+      def start_stop(self, w):
+          if self.button.get_label() == "Start":
+              filepath = self.entry.get_text().strip()
+              if os.path.isfile(filepath):
+                  filepath = os.path.realpath(filepath)
+                  self.button.set_label("Stop")
+                  self.player.get_by_name("file-source").set_property("location", filepath)
+                  self.player.set_state(Gst.State.PLAYING)
+              else:
+                  self.player.set_state(Gst.State.NULL)
+                  self.button.set_label("Start")
+  
+      def on_message(self, bus, message):
+          t = message.type
+          if t == Gst.MessageType.EOS:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+          elif t == Gst.MessageType.ERROR:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+              err, debug = message.parse_error()
+              print "Error: %s" % err, debug
+  
+  Gst.init(None)
+  GTK_Main()
+  GObject.threads_init()
+  Gtk.main()
+  
+#+END_SRC
+
+
+The next example is playing Mpeg2 videos. Some demuxers, such as =mpegdemux=, uses dynamic pads which are created at runtime and therefor you can't link between the demuxer and the next element in the pipeline before the pad has been created at runtime. Watch out for the =demuxer_callback()= method below.
+
+THIS EXAMPLE IS NOT WORKING YET!!! You may submit a solution for it and we will announce a winner that gets, at your option, a date with Richard M Stallman, Eric S Raymond or Scarlett Johansson. And before anyone asks, NO, you may only choose ONE of the above choices! TIA
+
+UPDATE! The competition is over. Mike Auty fixed it with a few queues. He passed on the grand prize though saying he's too busy coding so no time for dating. :D
+
+#+BEGIN_SRC ditaa :file pipeline-branch-block.png
+                                                           Gst.Pipeline 
+           +----------------------------------------------------------------------------------------------------------+
+           |                                                                                                          |
+           |                                     +-------+   +-------+   +----------------+   +---------------+       |
+           |                                     |       |   |       |   |                |   |               |       |
+           |                                 +->-+ queue +->-+  mad  +->-+  audioconvert  +->-+ autoaudiosink +--------->-Audio Output
+           |   +---------+   +-----------+   |   |       |   |       |   |                |   |               |       |
+           |   |         |   |           +->-+   +-------+   +-------+   +----------------+   +---------------+       |
+  file.mpg--->-| filesrc |->-| mpegdemux |                                                                            |
+           |   |         |   |           +->-+   +-------+   +----------+   +------------------+   +---------------+  |
+           |   +---------+   +-----------+   |   |       |   |          |   |                  |   |               |  |
+           |                                 +->-+ queue +->-+ mpeg2dec +->-+ ffmpegcolorspace +->-+ autovideosink +---->-Video Output
+           |                                     |       |   |          |   |                  |   |               |  |
+           |                                     +-------+   +----------+   +------------------+   +---------------+  |
+           |                                                                                                          |
+           +----------------------------------------------------------------------------------------------------------+
+#+END_SRC
+
+#+RESULTS:
+[[file:pipeline-branch-block.png]]
+
+
+#+BEGIN_SRC python :tangle pipeline-branch-example.py :results none
+  
+  #!/usr/bin/env python
+  
+  import sys, os
+  import gi
+  gi.require_version('Gst', '1.0')
+  from gi.repository import Gst, GObject, Gtk
+  
+  class GTK_Main(object):
+      
+      def __init__(self):
+          window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+          window.set_title("Mpeg2-Player")
+          window.set_default_size(500, 400)
+          window.connect("destroy", Gtk.main_quit, "WM destroy")
+          vbox = Gtk.VBox()
+          window.add(vbox)
+          hbox = Gtk.HBox()
+          vbox.pack_start(hbox, False, False, 0)
+          self.entry = Gtk.Entry()
+          hbox.add(self.entry)
+          self.button = Gtk.Button("Start")
+          hbox.pack_start(self.button, False, False, 0)
+          self.button.connect("clicked", self.start_stop)
+          self.movie_window = Gtk.DrawingArea()
+          vbox.add(self.movie_window)
+          window.show_all()
+          
+          self.player = Gst.Pipeline.new("player")
+          source = Gst.ElementFactory.make("filesrc", "file-source")
+          demuxer = Gst.ElementFactory.make("mpegpsdemux", "demuxer")
+          demuxer.connect("pad-added", self.demuxer_callback)
+          self.video_decoder = Gst.ElementFactory.make("mpeg2dec", "video-decoder")
+          self.audio_decoder = Gst.ElementFactory.make("mad", "audio-decoder")
+          audioconv = Gst.ElementFactory.make("audioconvert", "converter")
+          audiosink = Gst.ElementFactory.make("autoaudiosink", "audio-output")
+          videosink = Gst.ElementFactory.make("autovideosink", "video-output")
+          self.queuea = Gst.ElementFactory.make("queue", "queuea")
+          self.queuev = Gst.ElementFactory.make("queue", "queuev")
+          colorspace = Gst.ElementFactory.make("videoconvert", "colorspace")
+          
+          self.player.add(source) 
+          self.player.add(demuxer) 
+          self.player.add(self.video_decoder) 
+          self.player.add(self.audio_decoder) 
+          self.player.add(audioconv) 
+          self.player.add(audiosink) 
+          self.player.add(videosink) 
+          self.player.add(self.queuea) 
+          self.player.add(self.queuev) 
+          self.player.add(colorspace)
+  
+          source.link(demuxer)
+  
+          self.queuev.link(self.video_decoder)
+          self.video_decoder.link(colorspace)
+          colorspace.link(videosink)
+  
+          self.queuea.link(self.audio_decoder)
+          self.audio_decoder.link(audioconv)
+          audioconv.link(audiosink)
+          
+          bus = self.player.get_bus()
+          bus.add_signal_watch()
+          bus.enable_sync_message_emission()
+          bus.connect("message", self.on_message)
+          bus.connect("sync-message::element", self.on_sync_message)
+  
+      def start_stop(self, w):
+          if self.button.get_label() == "Start":
+              filepath = self.entry.get_text().strip()
+              if os.path.isfile(filepath):
+                  filepath = os.path.realpath(filepath)
+                  self.button.set_label("Stop")
+                  self.player.get_by_name("file-source").set_property("location", filepath)
+                  self.player.set_state(Gst.State.PLAYING)
+              else:
+                  self.player.set_state(Gst.State.NULL)
+                  self.button.set_label("Start")
+  
+      def on_message(self, bus, message):
+          t = message.type
+          if t == Gst.MessageType.EOS:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+          elif t == Gst.MessageType.ERROR:
+              err, debug = message.parse_error()
+              print "Error: %s" % err, debug
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+              
+      def on_sync_message(self, bus, message):
+          if message.get_structure().get_name() == 'prepare-window-handle':
+              imagesink = message.src
+              imagesink.set_property("force-aspect-ratio", True)
+              xid = self.movie_window.get_property('window').get_xid()
+              imagesink.set_window_handle(xid)
+      
+      def demuxer_callback(self, demuxer, pad):
+          if pad.get_property("template").name_template == "video_%02d":
+              qv_pad = self.queuev.get_pad("sink")
+              pad.link(qv_pad)
+          elif pad.get_property("template").name_template == "audio_%02d":
+              qa_pad = self.queuea.get_pad("sink")
+              pad.link(qa_pad)
+  
+  
+  Gst.init(None)
+  GTK_Main()
+  GObject.threads_init()
+  Gtk.main()
+#+END_SRC
+
+This example is here [[./pipeline-branch-example.py]].
+
+The elements in a pipeline connects to each other with pads and that's what the next chapter will tell you more about.
+
+* Src, sink, pad ... oh my!
+
+Hehe, now this isn't so complicated as it may seem at a first glance. A /src/ is an object that is "sending" data and a /sink/ is an object that is "receiving" data. These objects connect to each other with /pads/. Pads could be either /src/ or /sink/. Most elements have both /src/ and /sink/ pads. For example, a =mad= MP3 decoder element looks something like the ASCII figure below:
+
+
+#+BEGIN_SRC ditaa :file sink-src-block.png
+                                    mad element
+     +---------------------------------------------------------+
+     |                                                         |
+     | /------------\     +----------------+     /-----------\ |
+     | :            :     |                |     :           : |
+  ->---+ pad (sink) +-->--+ internal stuff +-->--+ pad (src) +-->-
+     | :            :     |                |     :           : |
+     | \------------/     +----------------+     \-----------/ |
+     |                                                         |
+     +---------------------------------------------------------+
+#+END_SRC
+
+#+RESULTS:
+[[file:sink-src-block.png]]
+
+And as always if you want to know more about highlevel elements gst-inspect is your friend:
+
+#+BEGIN_SRC sh :eval no
+  gst-inspect-1.0 mad
+#+END_SRC
+
+In particular, the inheritance diagram shows that =mad= is an element:
+
+#+BEGIN_EXAMPLE
+GObject
+ +----GInitiallyUnowned
+       +----GstObject
+             +----GstElement
+                   +----GstAudioDecoder
+                         +----GstMad
+#+END_EXAMPLE 
+
+There are many different ways to link elements together. In [[./pipeline-example.py]] we used the =Gst.Pipeline.add()= and the =.link()= method of the produced elements. You can also make a completely ready-to-go pipeline with the =parse_launch()= function. The many =.add()= calls in that example can be rewritten as:
+
+#+BEGIN_SRC python :eval no
+  mp3_pipeline = Gst.parse_launch("filesrc name=source ! mad name=decoder ! audioconvert name=conv ! alsasink name=sink")
+#+END_SRC
+
+The micro-language used in this function call is that of the =gst-launch= command line program.
+
+When you do manually link pads with the =.link()= method make sure that you link a /src/-pad to a /sink/-pad. No rule though without exceptions. A =Gst.GhostPad= should be linked to a pad of the same kind as it self. We have already showed how a ghostpad works in the addition to example 2.2. A [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html][=Gst.Bin=]] can't link to other objects if you don't link a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstGhostPad.html][=Gst.GhostPad=]] to an element inside the bin. The [[./playbin-example-video.py]] example in section [[Playbin]]  should look something like this:
+
+#+BEGIN_SRC ditaa :file playbin-pads-block.png
+    
+                                               Gst.Bin
+     /---------------------------------------------------------------------------- - -
+     |                                                                               
+     |                                       timeoverlay
+     |                +----------------------------------------------------------+
+     | /----------\   | /------------\   +---------------------+   /-----------\ |
+     | :          |   | :            |   |                     |   :           | |
+  ->---+ ghostpad |->---+ pad (sink) |->-| internal stuff here |->-+ pad (src) +-->--
+     | :          |   | :            |   |                     |   :           | |
+     | \----------/   | \------------/   +---------------------+   \-----------/ |
+     |                +----------------------------------------------------------+
+     |
+     \---------------------------------------------------------------------------- - -
+    
+#+END_SRC
+
+#+RESULTS:
+[[file:playbin-pads-block.png]]
+
+And the ghostpad above should be created as type "sink"!!!
+
+Some pads are not always available and are only created when they are in use. Such pads are called "dynamical pads". The next example will show how to use dynamically created pads with an oggdemux. The link between the demuxer and the decoder is created with the =demuxer_callback()= method, which is called whenever a pad is created in the demuxer using the "pad-added" signal.
+
+#+BEGIN_SRC python :tangle dynamic-ghostpad-example.py :results none
+  
+  #!/usr/bin/env python
+  
+  import sys, os
+  import gi
+  gi.require_version('Gst', '1.0')
+  from gi.repository import Gst, GObject, Gtk
+  
+  class GTK_Main(object):
+      
+      def __init__(self):
+          window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+          window.set_title("Vorbis-Player")
+          window.set_default_size(500, 200)
+          window.connect("destroy", Gtk.main_quit, "WM destroy")
+          vbox = Gtk.VBox()
+          window.add(vbox)
+          self.entry = Gtk.Entry()
+          vbox.pack_start(self.entry, False, False, 0)
+          self.button = Gtk.Button("Start")
+          vbox.add(self.button)
+          self.button.connect("clicked", self.start_stop)
+          window.show_all()
+          
+          self.player = Gst.Pipeline.new("player")
+          source = Gst.ElementFactory.make("filesrc", "file-source")
+          demuxer = Gst.ElementFactory.make("oggdemux", "demuxer")
+          demuxer.connect("pad-added", self.demuxer_callback)
+          self.audio_decoder = Gst.ElementFactory.make("vorbisdec", "vorbis-decoder")
+          audioconv = Gst.ElementFactory.make("audioconvert", "converter")
+          audiosink = Gst.ElementFactory.make("autoaudiosink", "audio-output")
+          
+          self.player.add(source)
+          self.player.add(demuxer)
+          self.player.add(self.audio_decoder)
+          self.player.add(audioconv)
+          self.player.add(audiosink)
+  
+          source.link(demuxer)
+          self.audio_decoder.link(audioconv)
+          audioconv.link(audiosink)
+          
+          bus = self.player.get_bus()
+          bus.add_signal_watch()
+          bus.connect("message", self.on_message)
+  
+      def start_stop(self, w):
+          if self.button.get_label() == "Start":
+              filepath = self.entry.get_text().strip()
+              if os.path.isfile(filepath):
+                  filepath = os.path.realpath(filepath)
+                  self.button.set_label("Stop")
+                  self.player.get_by_name("file-source").set_property("location", filepath)
+                  self.player.set_state(Gst.State.PLAYING)
+              else:
+                  self.player.set_state(Gst.State.NULL)
+                  self.button.set_label("Start")
+  
+      def on_message(self, bus, message):
+          t = message.type
+          if t == Gst.MessageType.EOS:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+          elif t == Gst.MessageType.ERROR:
+              err, debug = message.parse_error()
+              print "Error: %s" % err, debug
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+      
+      def demuxer_callback(self, demuxer, pad):
+          adec_pad = self.audio_decoder.get_static_pad("sink")
+          pad.link(adec_pad)
+  
+  
+  GObject.threads_init()
+  Gst.init(None)        
+  GTK_Main()
+  Gtk.main()
+  
+#+END_SRC
+
+
+Now after reading through these four chapters you could need a break. Happy hacking and stay tuned for more interesting chapters to come.
+
+*  Seeking
+
+Seeking in Gstreamer is done with the [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-seek][=seek()=]] and [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-seek-simple][=seek_simple()=]] methods. To be able to seek you will also need to tell Gstreamer what kind of seek it should do. In the following example we will use a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstInfo.html#GST-TIME-FORMAT:CAPS][=Gst.Format.TIME=]] format constant which will, as you may guess, do a time seek. We will also use the =query_duration()= and =query_position()= methods to get the file length and how long the file has currently played. Gstreamer uses nanoseconds by default so you have to adjust to that.
+
+In this next example we take the Vorbis-Player from example 4.1 and update it with some more stuff so it's able to seek and show duration and position.
+
+#+BEGIN_SRC python :tangle seeking-example.py :results none
+  
+  #!/usr/bin/env python
+  
+  import os, thread, time
+  import gi
+  gi.require_version("Gst", "1.0")
+  from gi.repository import Gst, GObject, Gtk, Gdk
+  
+  class GTK_Main:
+        
+      def __init__(self):
+          window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+          window.set_title("Vorbis-Player")
+          window.set_default_size(500, -1)
+          window.connect("destroy", Gtk.main_quit, "WM destroy")
+          vbox = Gtk.VBox()
+          window.add(vbox)
+          self.entry = Gtk.Entry()
+          vbox.pack_start(self.entry, False, False, 0)
+          hbox = Gtk.HBox()
+          vbox.add(hbox)
+          buttonbox = Gtk.HButtonBox()
+          hbox.pack_start(buttonbox, False, False, 0)
+          rewind_button = Gtk.Button("Rewind")
+          rewind_button.connect("clicked", self.rewind_callback)
+          buttonbox.add(rewind_button)
+          self.button = Gtk.Button("Start")
+          self.button.connect("clicked", self.start_stop)
+          buttonbox.add(self.button)
+          forward_button = Gtk.Button("Forward")
+          forward_button.connect("clicked", self.forward_callback)
+          buttonbox.add(forward_button)
+          self.time_label = Gtk.Label()
+          self.time_label.set_text("00:00 / 00:00")
+          hbox.add(self.time_label)
+          window.show_all()
+          
+          self.player = Gst.Pipeline.new("player")
+          source = Gst.ElementFactory.make("filesrc", "file-source")
+          demuxer = Gst.ElementFactory.make("oggdemux", "demuxer")
+          demuxer.connect("pad-added", self.demuxer_callback)
+          self.audio_decoder = Gst.ElementFactory.make("vorbisdec", "vorbis-decoder")
+          audioconv = Gst.ElementFactory.make("audioconvert", "converter")
+          audiosink = Gst.ElementFactory.make("autoaudiosink", "audio-output")
+          
+          for ele in [source, demuxer, self.audio_decoder, audioconv, audiosink]:
+              self.player.add(ele)
+          source.link(demuxer)
+          self.audio_decoder.link(audioconv)
+          audioconv.link(audiosink)
+          
+          bus = self.player.get_bus()
+          bus.add_signal_watch()
+          bus.connect("message", self.on_message)
+          
+      def start_stop(self, w):
+          if self.button.get_label() == "Start":
+              filepath = self.entry.get_text().strip()
+              if os.path.isfile(filepath):
+                  filepath = os.path.realpath(filepath)
+                  self.button.set_label("Stop")
+                  self.player.get_by_name("file-source").set_property("location", filepath)
+                  self.player.set_state(Gst.State.PLAYING)
+                  self.play_thread_id = thread.start_new_thread(self.play_thread, ())
+              else:
+                  self.play_thread_id = None
+                  self.player.set_state(Gst.State.NULL)
+                  self.button.set_label("Start")
+                  self.time_label.set_text("00:00 / 00:00")
+                  
+      def play_thread(self):
+          play_thread_id = self.play_thread_id
+          Gdk.threads_enter()
+          self.time_label.set_text("00:00 / 00:00")
+          Gdk.threads_leave()
+          
+          while play_thread_id == self.play_thread_id:
+              try:
+                  time.sleep(0.2)
+                  dur_int = self.player.query_duration(Gst.Format.TIME, None)[0]
+                  if dur_int == -1:
+                      continue
+                  dur_str = self.convert_ns(dur_int)
+                  Gdk.threads_enter()
+                  self.time_label.set_text("00:00 / " + dur_str)
+                  Gdk.threads_leave()
+                  break
+              except:
+                  pass
+                  
+          time.sleep(0.2)
+          while play_thread_id == self.play_thread_id:
+              pos_int = self.player.query_position(Gst.Format.TIME, None)[0]
+              pos_str = self.convert_ns(pos_int)
+              if play_thread_id == self.play_thread_id:
+                  Gdk.threads_enter()
+                  self.time_label.set_text(pos_str + " / " + dur_str)
+                  Gdk.threads_leave()
+              time.sleep(1)
+                  
+      def on_message(self, bus, message):
+          t = message.type
+          if t == Gst.MessageType.EOS:
+              self.play_thread_id = None
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+              self.time_label.set_text("00:00 / 00:00")
+          elif t == Gst.MessageType.ERROR:
+              err, debug = message.parse_error()
+              print "Error: %s" % err, debug
+              self.play_thread_id = None
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+              self.time_label.set_text("00:00 / 00:00")
+              
+      def demuxer_callback(self, demuxer, pad):
+          adec_pad = self.audio_decoder.get_static_pad("sink")
+          pad.link(adec_pad)
+          
+      def rewind_callback(self, w):
+          rc, pos_int = self.player.query_position(Gst.Format.TIME)
+          seek_ns = pos_int - 10 * 1000000000
+          if seek_ns < 0:
+              seek_ns = 0
+          print 'Backward: %d ns -> %d ns' % (pos_int, seek_ns)
+          self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
+          
+      def forward_callback(self, w):
+          rc, pos_int = self.player.query_position(Gst.Format.TIME)
+          seek_ns = pos_int + 10 * 1000000000
+          print 'Forward: %d ns -> %d ns' % (pos_int, seek_ns)
+          self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
+          
+      def convert_ns(self, t):
+          # This method was submitted by Sam Mason.
+          # It's much shorter than the original one.
+          s,ns = divmod(t, 1000000000)
+          m,s = divmod(s, 60)
+          
+          if m < 60:
+              return "%02i:%02i" %(m,s)
+          else:
+              h,m = divmod(m, 60)
+              return "%i:%02i:%02i" %(h,m,s)
+              
+  GObject.threads_init()
+  Gst.init(None)        
+  GTK_Main()
+  Gtk.main()
+  
+    
+    
+#+END_SRC
