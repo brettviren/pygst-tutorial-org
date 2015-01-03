@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Python GStreamer Tutorial</title>
-<!-- 2015-01-03 Sat 14:58 -->
+<!-- 2015-01-03 Sat 18:33 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Jens Persson and Ruben Gonzalez and Brett Viren" />
@@ -150,6 +150,7 @@ for the JavaScript code in this tag.
 <li><a href="#sec-4">4. Pipeline</a></li>
 <li><a href="#sec-5">5. Src, sink, pad &#x2026; oh my!</a></li>
 <li><a href="#sec-6">6. Seeking</a></li>
+<li><a href="#sec-7">7. Capabilities</a></li>
 </ul>
 </div>
 </div>
@@ -1177,10 +1178,296 @@ Gtk.main()
 </div>
 </div>
 </div>
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Capabilities</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+Capabilities, <code>Gst.Caps</code>, is a container where you may store information that you may pass on to a <code>Gst.PadTemplate</code>. When you set the pipeline state to either playing or paused the elements pads negotiates what caps to use for the stream. Now the following pipeline works perfectly:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-launch-1.0  videotestsrc ! video/x-raw, <span style="color: #a0522d;">width</span>=320, <span style="color: #a0522d;">height</span>=240 ! xvimagesink
+</pre>
+</div>
+
+<p>
+But if you try to switch out the <code>xvimagesink</code> for an <code>ximagesink</code> you will notice that it wouldn't work. That's because <code>ximagesink</code> can't handle <code>video/x-raw-yuv</code> so you must put in an element BEFORE in the pipeline that does.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-launch-1.0  videotestsrc ! video/x-raw, <span style="color: #a0522d;">width</span>=320, <span style="color: #a0522d;">height</span>=240 ! videoconvert ! ximagesink
+</pre>
+</div>
+
+<p>
+And as <code>ximagesink</code> does not support hardware scaling you have to throw in a <code>videoscale</code> element too if you want software scaling.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">gst-launch-1.0  videotestsrc ! video/x-raw, <span style="color: #a0522d;">width</span>=320, <span style="color: #a0522d;">height</span>=240 ! videoscale ! videoconvert ! ximagesink
+</pre>
+</div>
+
+<p>
+To put the above examples in code you have to put the caps in a capsfilter element.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">"Gst"</span>, <span style="color: #8b2252;">"1.0"</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GObject, Gtk
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">GTK_Main</span>:
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">window</span> = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        window.set_title(<span style="color: #8b2252;">"Videotestsrc-Player"</span>)
+        window.set_default_size(300, -1)
+        window.connect(<span style="color: #8b2252;">"destroy"</span>, Gtk.main_quit, <span style="color: #8b2252;">"WM destroy"</span>)
+        <span style="color: #a0522d;">vbox</span> = Gtk.VBox()
+        window.add(vbox)
+        <span style="color: #a020f0;">self</span>.button = Gtk.Button(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">self</span>.button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.start_stop)
+        vbox.add(<span style="color: #a020f0;">self</span>.button)
+        window.show_all()
+        <span style="color: #a020f0;">self</span>.player = Gst.Pipeline.new(<span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a0522d;">source</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"videotestsrc"</span>, <span style="color: #8b2252;">"video-source"</span>)
+        <span style="color: #a0522d;">sink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"xvimagesink"</span>, <span style="color: #8b2252;">"video-output"</span>)
+        <span style="color: #a0522d;">caps</span> = Gst.Caps.from_string(<span style="color: #8b2252;">"video/x-raw, width=320, height=230"</span>)
+        <span style="color: #483d8b;">filter</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"capsfilter"</span>, <span style="color: #8b2252;">"filter"</span>)
+        <span style="color: #483d8b;">filter</span>.set_property(<span style="color: #8b2252;">"caps"</span>, caps)
+        <span style="color: #a020f0;">self</span>.player.add(source)
+        <span style="color: #a020f0;">self</span>.player.add(<span style="color: #483d8b;">filter</span>)
+        <span style="color: #a020f0;">self</span>.player.add(sink)
+        source.link(<span style="color: #483d8b;">filter</span>)
+        <span style="color: #483d8b;">filter</span>.link(sink)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start_stop</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a020f0;">if</span> <span style="color: #a020f0;">self</span>.button.get_label() == <span style="color: #8b2252;">"Start"</span>:
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Stop"</span>)
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PLAYING)
+        <span style="color: #a020f0;">else</span>:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+GObject.threads_init()
+Gst.init(<span style="color: #008b8b;">None</span>)        
+GTK_Main()
+Gtk.main()
+</pre>
+</div>
+
+<p>
+A frequently asked question is how to find out what resolution a file has and one way to do it is to check the caps on a decodebin element in paused state.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> os
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">"Gst"</span>, <span style="color: #8b2252;">"1.0"</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GObject, Gtk
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">GTK_Main</span>:
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">window</span> = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        window.set_title(<span style="color: #8b2252;">"Resolutionchecker"</span>)
+        window.set_default_size(300, -1)
+        window.connect(<span style="color: #8b2252;">"destroy"</span>, Gtk.main_quit, <span style="color: #8b2252;">"WM destroy"</span>)
+        <span style="color: #a0522d;">vbox</span> = Gtk.VBox()
+        window.add(vbox)
+        <span style="color: #a020f0;">self</span>.entry = Gtk.Entry()
+        vbox.pack_start(<span style="color: #a020f0;">self</span>.entry, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">True</span>, 0)
+        <span style="color: #a020f0;">self</span>.button = Gtk.Button(<span style="color: #8b2252;">"Check"</span>)
+        <span style="color: #a020f0;">self</span>.button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.start_stop)
+        vbox.add(<span style="color: #a020f0;">self</span>.button)
+        window.show_all()
+        <span style="color: #a020f0;">self</span>.player = Gst.Pipeline.new(<span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a0522d;">source</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"filesrc"</span>, <span style="color: #8b2252;">"file-source"</span>)
+        <span style="color: #a0522d;">decoder</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"decodebin"</span>, <span style="color: #8b2252;">"decoder"</span>)
+        decoder.connect(<span style="color: #8b2252;">"pad-added"</span>, <span style="color: #a020f0;">self</span>.decoder_callback)
+        <span style="color: #a020f0;">self</span>.fakea = Gst.ElementFactory.make(<span style="color: #8b2252;">"fakesink"</span>, <span style="color: #8b2252;">"fakea"</span>)
+        <span style="color: #a020f0;">self</span>.fakev = Gst.ElementFactory.make(<span style="color: #8b2252;">"fakesink"</span>, <span style="color: #8b2252;">"fakev"</span>)
+        <span style="color: #a020f0;">self</span>.player.add(source)
+        <span style="color: #a020f0;">self</span>.player.add(decoder)
+        <span style="color: #a020f0;">self</span>.player.add(<span style="color: #a020f0;">self</span>.fakea)
+        <span style="color: #a020f0;">self</span>.player.add(<span style="color: #a020f0;">self</span>.fakev)
+        source.link(decoder)
+        <span style="color: #a0522d;">bus</span> = <span style="color: #a020f0;">self</span>.player.get_bus()
+        bus.add_signal_watch()
+        bus.connect(<span style="color: #8b2252;">"message"</span>, <span style="color: #a020f0;">self</span>.on_message)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start_stop</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a0522d;">filepath</span> = <span style="color: #a020f0;">self</span>.entry.get_text().strip()
+        <span style="color: #a020f0;">if</span> os.path.isfile(filepath):
+            <span style="color: #a0522d;">filepath</span> = os.path.realpath(filepath)
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.player.get_by_name(<span style="color: #8b2252;">"file-source"</span>).set_property(<span style="color: #8b2252;">"location"</span>, filepath)
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PAUSED)
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a0522d;">typ</span> = message.<span style="color: #483d8b;">type</span>
+        <span style="color: #a020f0;">if</span> typ == Gst.MessageType.STATE_CHANGED:
+            <span style="color: #a020f0;">if</span> message.parse_state_changed()[1] == Gst.State.PAUSED:
+                decoder = <span style="color: #a020f0;">self</span>.player.get_by_name(<span style="color: #8b2252;">"decoder"</span>)
+                <span style="color: #a020f0;">for</span> pad <span style="color: #a020f0;">in</span> decoder.srcpads:
+                    caps = pad.query_caps(<span style="color: #008b8b;">None</span>)
+                    structure_name = caps.to_string()
+                    width = caps.get_structure(0).get_int(<span style="color: #8b2252;">'width'</span>)
+                    height = caps.get_structure(0).get_int(<span style="color: #8b2252;">'height'</span>)
+                    <span style="color: #a020f0;">if</span> structure_name.startswith(<span style="color: #8b2252;">"video"</span>) <span style="color: #a020f0;">and</span> <span style="color: #483d8b;">len</span>(<span style="color: #483d8b;">str</span>(width)) &lt; 6:
+                        <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Width:%d, Height:%d"</span> %(width, height)
+                        <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+                        <span style="color: #a020f0;">break</span>
+        <span style="color: #a020f0;">elif</span> typ == Gst.MessageType.ERROR:
+            <span style="color: #a0522d;">err</span>, debug = message.parse_error()
+            <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Error: %s"</span> % err, debug
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">decoder_callback</span>(<span style="color: #a020f0;">self</span>, decoder, pad):
+        caps = pad.query_caps(<span style="color: #008b8b;">None</span>)
+        structure_name = caps.to_string()
+        <span style="color: #a020f0;">if</span> structure_name.startswith(<span style="color: #8b2252;">"video"</span>):
+            fv_pad = <span style="color: #a020f0;">self</span>.fakev.get_static_pad(<span style="color: #8b2252;">"sink"</span>)
+            pad.link(fv_pad)
+        <span style="color: #a020f0;">elif</span> structure_name.startswith(<span style="color: #8b2252;">"audio"</span>):
+            fa_pad = <span style="color: #a020f0;">self</span>.fakea.get_static_pad(<span style="color: #8b2252;">"sink"</span>)
+            pad.link(fa_pad)
+
+GObject.threads_init()
+Gst.init(<span style="color: #008b8b;">None</span>)        
+GTK_Main()
+Gtk.main()
+</pre>
+</div>
+
+
+<p>
+Note: The examples here in this tutorial have grown a bit lately and it's not easy to show working gstreamer stuff in not so many lines but I'll try as hard as I can to do just that. Maybe we have to have the code in separate files that you may take a look at if you find anything interesting. The examples share much code too and when the numbers of chapters beefs up so does the readers knowledge and they can make sense out of just a few lines of code instead of runable code examples. Well, time will tell how far we gets.
+</p>
+
+<p>
+In this example we will use the playbin from example 2.2 and switch its video-sink out for our own homemade bin, stuffed with some goodies. Now, let's say that you run a tv-station and you want to have your logo in the top right corner of the screen. For that you can use a textoverlay but for the fonts to be the exact same size on the screen no matter what kind of resolution the source has you have to specify a width so everything is scaled according to that.
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
+
+<span style="color: #a020f0;">import</span> os
+<span style="color: #a020f0;">import</span> gi
+gi.require_version(<span style="color: #8b2252;">"Gst"</span>, <span style="color: #8b2252;">"1.0"</span>)
+<span style="color: #a020f0;">from</span> gi.repository <span style="color: #a020f0;">import</span> Gst, GObject, Gtk
+
+<span style="color: #a020f0;">class</span> <span style="color: #228b22;">GTK_Main</span>:
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">__init__</span>(<span style="color: #a020f0;">self</span>):
+        <span style="color: #a0522d;">window</span> = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        window.set_title(<span style="color: #8b2252;">"Video-Player"</span>)
+        window.set_default_size(500, 400)
+        window.connect(<span style="color: #8b2252;">"destroy"</span>, Gtk.main_quit, <span style="color: #8b2252;">"WM destroy"</span>)
+        <span style="color: #a0522d;">vbox</span> = Gtk.VBox()
+        window.add(vbox)
+        <span style="color: #a0522d;">hbox</span> = Gtk.HBox()
+        vbox.pack_start(hbox, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">False</span>, 0)
+        <span style="color: #a020f0;">self</span>.entry = Gtk.Entry()
+        hbox.add(<span style="color: #a020f0;">self</span>.entry)
+        <span style="color: #a020f0;">self</span>.button = Gtk.Button(<span style="color: #8b2252;">"Start"</span>)
+        hbox.pack_start(<span style="color: #a020f0;">self</span>.button, <span style="color: #008b8b;">False</span>, <span style="color: #008b8b;">False</span>, 0)
+        <span style="color: #a020f0;">self</span>.button.connect(<span style="color: #8b2252;">"clicked"</span>, <span style="color: #a020f0;">self</span>.start_stop)
+        <span style="color: #a020f0;">self</span>.movie_window = Gtk.DrawingArea()
+        vbox.add(<span style="color: #a020f0;">self</span>.movie_window)
+        window.show_all()
+        <span style="color: #a020f0;">self</span>.player = Gst.ElementFactory.make(<span style="color: #8b2252;">"playbin"</span>, <span style="color: #8b2252;">"player"</span>)
+        <span style="color: #a020f0;">self</span>.<span style="color: #483d8b;">bin</span> = Gst.Bin.new(<span style="color: #8b2252;">"my-bin"</span>)
+        <span style="color: #a0522d;">videoscale</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"videoscale"</span>)
+        videoscale.set_property(<span style="color: #8b2252;">"method"</span>, 1)
+        <span style="color: #a0522d;">pad</span> = videoscale.get_static_pad(<span style="color: #8b2252;">"sink"</span>)
+        <span style="color: #a0522d;">ghostpad</span> = Gst.GhostPad.new(<span style="color: #8b2252;">"sink"</span>, pad)
+        <span style="color: #a020f0;">self</span>.<span style="color: #483d8b;">bin</span>.add_pad(ghostpad)
+        <span style="color: #a0522d;">caps</span> = Gst.Caps.from_string(<span style="color: #8b2252;">"video/x-raw, width=720"</span>)
+        <span style="color: #483d8b;">filter</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"capsfilter"</span>, <span style="color: #8b2252;">"filter"</span>)
+        <span style="color: #483d8b;">filter</span>.set_property(<span style="color: #8b2252;">"caps"</span>, caps)
+        <span style="color: #a0522d;">textoverlay</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">'textoverlay'</span>)
+        textoverlay.set_property(<span style="color: #8b2252;">"text"</span>, <span style="color: #8b2252;">"GNUTV"</span>)
+        textoverlay.set_property(<span style="color: #8b2252;">"font-desc"</span>, <span style="color: #8b2252;">"normal 14"</span>)
+        <span style="color: #b22222;"># </span><span style="color: #b22222;">TypeError: object of type `GstTextOverlay' does not have property `halign'</span>
+        <span style="color: #b22222;">#</span><span style="color: #b22222;">textoverlay.set_property("halign", "right")</span>
+        <span style="color: #b22222;"># </span><span style="color: #b22222;">TypeError: object of type `GstTextOverlay' does not have property `valign'</span>
+        <span style="color: #b22222;">#</span><span style="color: #b22222;">textoverlay.set_property("valign", "top")</span>
+        <span style="color: #a0522d;">conv</span> = Gst.ElementFactory.make (<span style="color: #8b2252;">"videoconvert"</span>, <span style="color: #8b2252;">"conv"</span>)
+        <span style="color: #a0522d;">videosink</span> = Gst.ElementFactory.make(<span style="color: #8b2252;">"autovideosink"</span>)
+
+        <span style="color: #a020f0;">self</span>.<span style="color: #483d8b;">bin</span>.add(videoscale) 
+        <span style="color: #a020f0;">self</span>.<span style="color: #483d8b;">bin</span>.add(<span style="color: #483d8b;">filter</span>) 
+        <span style="color: #a020f0;">self</span>.<span style="color: #483d8b;">bin</span>.add(textoverlay)
+        <span style="color: #a020f0;">self</span>.<span style="color: #483d8b;">bin</span>.add(conv)
+        <span style="color: #a020f0;">self</span>.<span style="color: #483d8b;">bin</span>.add(videosink)
+
+        videoscale.link(<span style="color: #483d8b;">filter</span>)
+        <span style="color: #483d8b;">filter</span>.link(textoverlay)
+        textoverlay.link(conv)
+        conv.link(videosink)
+
+        <span style="color: #a020f0;">self</span>.player.set_property(<span style="color: #8b2252;">"video-sink"</span>, <span style="color: #a020f0;">self</span>.<span style="color: #483d8b;">bin</span>)
+        <span style="color: #a0522d;">bus</span> = <span style="color: #a020f0;">self</span>.player.get_bus()
+        bus.add_signal_watch()
+        bus.enable_sync_message_emission()
+        bus.connect(<span style="color: #8b2252;">"message"</span>, <span style="color: #a020f0;">self</span>.on_message)
+        bus.connect(<span style="color: #8b2252;">"sync-message::element"</span>, <span style="color: #a020f0;">self</span>.on_sync_message)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">start_stop</span>(<span style="color: #a020f0;">self</span>, w):
+        <span style="color: #a020f0;">if</span> <span style="color: #a020f0;">self</span>.button.get_label() == <span style="color: #8b2252;">"Start"</span>:
+            <span style="color: #a0522d;">filepath</span> = <span style="color: #a020f0;">self</span>.entry.get_text().strip()
+            <span style="color: #a020f0;">if</span> os.path.exists(filepath):
+                <span style="color: #a0522d;">filepath</span> = os.path.realpath(filepath)
+                <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Stop"</span>)
+                <span style="color: #a020f0;">self</span>.player.set_property(<span style="color: #8b2252;">"uri"</span>, <span style="color: #8b2252;">"file://"</span> + filepath)
+                <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.PLAYING)
+        <span style="color: #a020f0;">else</span>:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a0522d;">typ</span> = message.<span style="color: #483d8b;">type</span>
+        <span style="color: #a020f0;">if</span> typ == Gst.MessageType.EOS:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+        <span style="color: #a020f0;">elif</span> typ == Gst.MessageType.ERROR:
+            <span style="color: #a020f0;">self</span>.player.set_state(Gst.State.NULL)
+            <span style="color: #a020f0;">self</span>.button.set_label(<span style="color: #8b2252;">"Start"</span>)
+            <span style="color: #a0522d;">err</span>, debug = message.parse_error()
+            <span style="color: #a020f0;">print</span> <span style="color: #8b2252;">"Error: %s"</span> % err, debug
+
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">on_sync_message</span>(<span style="color: #a020f0;">self</span>, bus, message):
+        <span style="color: #a020f0;">if</span> message.structure <span style="color: #a020f0;">is</span> <span style="color: #008b8b;">None</span>:
+            <span style="color: #a020f0;">return</span>
+        message_name = message.structure.get_name()
+        <span style="color: #a020f0;">if</span> message_name == <span style="color: #8b2252;">"prepare-xwindow-id"</span>:
+            imagesink = message.src
+            imagesink.set_property(<span style="color: #8b2252;">"force-aspect-ratio"</span>, <span style="color: #008b8b;">True</span>)
+            imagesink.set_xwindow_id(<span style="color: #a020f0;">self</span>.movie_window.window.xid)
+
+GObject.threads_init()
+Gst.init(<span style="color: #008b8b;">None</span>)        
+GTK_Main()
+Gtk.main()
+</pre>
+</div>
+</div>
+</div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Jens Persson and Ruben Gonzalez and Brett Viren</p>
-<p class="date">Created: 2015-01-03 Sat 14:58</p>
+<p class="date">Created: 2015-01-03 Sat 18:33</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.5h)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

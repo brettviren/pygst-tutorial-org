@@ -943,3 +943,263 @@ In this next example we take the Vorbis-Player from example 4.1 and update it wi
     
     
 #+END_SRC
+* Capabilities
+
+Capabilities, =Gst.Caps=, is a container where you may store information that you may pass on to a =Gst.PadTemplate=. When you set the pipeline state to either playing or paused the elements pads negotiates what caps to use for the stream. Now the following pipeline works perfectly:
+
+#+BEGIN_SRC sh :eval no
+  gst-launch-1.0  videotestsrc ! video/x-raw, width=320, height=240 ! xvimagesink
+#+END_SRC
+
+But if you try to switch out the =xvimagesink= for an =ximagesink= you will notice that it wouldn't work. That's because =ximagesink= can't handle =video/x-raw-yuv= so you must put in an element BEFORE in the pipeline that does.
+
+#+BEGIN_SRC sh :eval no
+  gst-launch-1.0  videotestsrc ! video/x-raw, width=320, height=240 ! videoconvert ! ximagesink
+#+END_SRC
+
+And as =ximagesink= does not support hardware scaling you have to throw in a =videoscale= element too if you want software scaling.
+
+#+BEGIN_SRC sh :eval no
+  gst-launch-1.0  videotestsrc ! video/x-raw, width=320, height=240 ! videoscale ! videoconvert ! ximagesink
+#+END_SRC
+
+To put the above examples in code you have to put the caps in a capsfilter element.
+
+#+BEGIN_SRC python :tangle capabilities-example.py :results none
+  #!/usr/bin/env python
+  
+  import gi
+  gi.require_version("Gst", "1.0")
+  from gi.repository import Gst, GObject, Gtk
+  
+  class GTK_Main:
+      
+      def __init__(self):
+          window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+          window.set_title("Videotestsrc-Player")
+          window.set_default_size(300, -1)
+          window.connect("destroy", Gtk.main_quit, "WM destroy")
+          vbox = Gtk.VBox()
+          window.add(vbox)
+          self.button = Gtk.Button("Start")
+          self.button.connect("clicked", self.start_stop)
+          vbox.add(self.button)
+          window.show_all()
+          self.player = Gst.Pipeline.new("player")
+          source = Gst.ElementFactory.make("videotestsrc", "video-source")
+          sink = Gst.ElementFactory.make("xvimagesink", "video-output")
+          caps = Gst.Caps.from_string("video/x-raw, width=320, height=230")
+          filter = Gst.ElementFactory.make("capsfilter", "filter")
+          filter.set_property("caps", caps)
+          self.player.add(source)
+          self.player.add(filter)
+          self.player.add(sink)
+          source.link(filter)
+          filter.link(sink)
+  
+      def start_stop(self, w):
+          if self.button.get_label() == "Start":
+              self.button.set_label("Stop")
+              self.player.set_state(Gst.State.PLAYING)
+          else:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+  
+  GObject.threads_init()
+  Gst.init(None)        
+  GTK_Main()
+  Gtk.main()
+  
+    
+#+END_SRC
+
+A frequently asked question is how to find out what resolution a file has and one way to do it is to check the caps on a decodebin element in paused state.
+
+#+BEGIN_SRC python :tangle capabilities-resolution-example.py :results none
+  #!/usr/bin/env python
+  
+  import os
+  import gi
+  gi.require_version("Gst", "1.0")
+  from gi.repository import Gst, GObject, Gtk
+  
+  class GTK_Main:
+      def __init__(self):
+          window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+          window.set_title("Resolutionchecker")
+          window.set_default_size(300, -1)
+          window.connect("destroy", Gtk.main_quit, "WM destroy")
+          vbox = Gtk.VBox()
+          window.add(vbox)
+          self.entry = Gtk.Entry()
+          vbox.pack_start(self.entry, False, True, 0)
+          self.button = Gtk.Button("Check")
+          self.button.connect("clicked", self.start_stop)
+          vbox.add(self.button)
+          window.show_all()
+          self.player = Gst.Pipeline.new("player")
+          source = Gst.ElementFactory.make("filesrc", "file-source")
+          decoder = Gst.ElementFactory.make("decodebin", "decoder")
+          decoder.connect("pad-added", self.decoder_callback)
+          self.fakea = Gst.ElementFactory.make("fakesink", "fakea")
+          self.fakev = Gst.ElementFactory.make("fakesink", "fakev")
+          self.player.add(source)
+          self.player.add(decoder)
+          self.player.add(self.fakea)
+          self.player.add(self.fakev)
+          source.link(decoder)
+          bus = self.player.get_bus()
+          bus.add_signal_watch()
+          bus.connect("message", self.on_message)
+  
+      def start_stop(self, w):
+          filepath = self.entry.get_text().strip()
+          if os.path.isfile(filepath):
+              filepath = os.path.realpath(filepath)
+              self.player.set_state(Gst.State.NULL)
+              self.player.get_by_name("file-source").set_property("location", filepath)
+              self.player.set_state(Gst.State.PAUSED)
+      def on_message(self, bus, message):
+          typ = message.type
+          if typ == Gst.MessageType.STATE_CHANGED:
+              if message.parse_state_changed()[1] == Gst.State.PAUSED:
+                  decoder = self.player.get_by_name("decoder")
+                  for pad in decoder.srcpads:
+                      caps = pad.query_caps(None)
+                      structure_name = caps.to_string()
+                      width = caps.get_structure(0).get_int('width')
+                      height = caps.get_structure(0).get_int('height')
+                      if structure_name.startswith("video") and len(str(width)) < 6:
+                          print "Width:%d, Height:%d" %(width, height)
+                          self.player.set_state(Gst.State.NULL)
+                          break
+          elif typ == Gst.MessageType.ERROR:
+              err, debug = message.parse_error()
+              print "Error: %s" % err, debug
+              self.player.set_state(Gst.State.NULL)
+  
+      def decoder_callback(self, decoder, pad):
+          caps = pad.query_caps(None)
+          structure_name = caps.to_string()
+          if structure_name.startswith("video"):
+              fv_pad = self.fakev.get_static_pad("sink")
+              pad.link(fv_pad)
+          elif structure_name.startswith("audio"):
+              fa_pad = self.fakea.get_static_pad("sink")
+              pad.link(fa_pad)
+  
+  GObject.threads_init()
+  Gst.init(None)        
+  GTK_Main()
+  Gtk.main()
+  
+#+END_SRC
+
+
+Note: The examples here in this tutorial have grown a bit lately and it's not easy to show working gstreamer stuff in not so many lines but I'll try as hard as I can to do just that. Maybe we have to have the code in separate files that you may take a look at if you find anything interesting. The examples share much code too and when the numbers of chapters beefs up so does the readers knowledge and they can make sense out of just a few lines of code instead of runable code examples. Well, time will tell how far we gets.
+
+In this example we will use the playbin from example 2.2 and switch its video-sink out for our own homemade bin, stuffed with some goodies. Now, let's say that you run a tv-station and you want to have your logo in the top right corner of the screen. For that you can use a textoverlay but for the fonts to be the exact same size on the screen no matter what kind of resolution the source has you have to specify a width so everything is scaled according to that.
+
+
+#+BEGIN_SRC python :tangle capabilities-playbin-example.py :results none
+  #!/usr/bin/env python
+  
+  import os
+  import gi
+  gi.require_version("Gst", "1.0")
+  from gi.repository import Gst, GObject, Gtk
+  
+  class GTK_Main:
+      def __init__(self):
+          window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+          window.set_title("Video-Player")
+          window.set_default_size(500, 400)
+          window.connect("destroy", Gtk.main_quit, "WM destroy")
+          vbox = Gtk.VBox()
+          window.add(vbox)
+          hbox = Gtk.HBox()
+          vbox.pack_start(hbox, False, False, 0)
+          self.entry = Gtk.Entry()
+          hbox.add(self.entry)
+          self.button = Gtk.Button("Start")
+          hbox.pack_start(self.button, False, False, 0)
+          self.button.connect("clicked", self.start_stop)
+          self.movie_window = Gtk.DrawingArea()
+          vbox.add(self.movie_window)
+          window.show_all()
+          self.player = Gst.ElementFactory.make("playbin", "player")
+          self.bin = Gst.Bin.new("my-bin")
+          videoscale = Gst.ElementFactory.make("videoscale")
+          videoscale.set_property("method", 1)
+          pad = videoscale.get_static_pad("sink")
+          ghostpad = Gst.GhostPad.new("sink", pad)
+          self.bin.add_pad(ghostpad)
+          caps = Gst.Caps.from_string("video/x-raw, width=720")
+          filter = Gst.ElementFactory.make("capsfilter", "filter")
+          filter.set_property("caps", caps)
+          textoverlay = Gst.ElementFactory.make('textoverlay')
+          textoverlay.set_property("text", "GNUTV")
+          textoverlay.set_property("font-desc", "normal 14")
+          # TypeError: object of type `GstTextOverlay' does not have property `halign'
+          #textoverlay.set_property("halign", "right")
+          # TypeError: object of type `GstTextOverlay' does not have property `valign'
+          #textoverlay.set_property("valign", "top")
+          conv = Gst.ElementFactory.make ("videoconvert", "conv")
+          videosink = Gst.ElementFactory.make("autovideosink")
+          
+          self.bin.add(videoscale) 
+          self.bin.add(filter) 
+          self.bin.add(textoverlay)
+          self.bin.add(conv)
+          self.bin.add(videosink)
+  
+          videoscale.link(filter)
+          filter.link(textoverlay)
+          textoverlay.link(conv)
+          conv.link(videosink)
+  
+          self.player.set_property("video-sink", self.bin)
+          bus = self.player.get_bus()
+          bus.add_signal_watch()
+          bus.enable_sync_message_emission()
+          bus.connect("message", self.on_message)
+          bus.connect("sync-message::element", self.on_sync_message)
+  
+      def start_stop(self, w):
+          if self.button.get_label() == "Start":
+              filepath = self.entry.get_text().strip()
+              if os.path.exists(filepath):
+                  filepath = os.path.realpath(filepath)
+                  self.button.set_label("Stop")
+                  self.player.set_property("uri", "file://" + filepath)
+                  self.player.set_state(Gst.State.PLAYING)
+          else:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+  
+      def on_message(self, bus, message):
+          typ = message.type
+          if typ == Gst.MessageType.EOS:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+          elif typ == Gst.MessageType.ERROR:
+              self.player.set_state(Gst.State.NULL)
+              self.button.set_label("Start")
+              err, debug = message.parse_error()
+              print "Error: %s" % err, debug
+  
+      def on_sync_message(self, bus, message):
+          if message.structure is None:
+              return
+          message_name = message.structure.get_name()
+          if message_name == "prepare-xwindow-id":
+              imagesink = message.src
+              imagesink.set_property("force-aspect-ratio", True)
+              imagesink.set_xwindow_id(self.movie_window.window.xid)
+  
+  GObject.threads_init()
+  Gst.init(None)        
+  GTK_Main()
+  Gtk.main()
+  
+#+END_SRC

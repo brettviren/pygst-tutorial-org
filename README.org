@@ -5,3 +5,9 @@ This holds a tutorial written in Emacs org-mode on using the Python bindings for
 The main document is [[./pygst-tutorial.org]].  If your read this Emacs many of the examples will run from the document (=C-c C-c= on the source block) or you can tangle the examples to a file (=C-c C-v t=).   An HTML export of the document is also included ([[./pygst-tutorial.html]]).  You can maybe view this file from [[https://cdn.rawgit.com/brettviren/pygst-tutorial-org/master/pygst-tutorial.html][this rawgit link]] or [[http://htmlpreview.github.io/?https://raw.githubusercontent.com/brettviren/pygst-tutorial-org/master/pygst-tutorial.html][this htmlpreview GitHub link]].
 
 I commit these tangled/exported derived files here too but they may not always be kept up to date with the org source.
+
+Sources of info:
+
+- [[https://github.com/rubenrua/GstreamerCodeSnippets][GstreamerCodeSnippets]]
+- [[https://lazka.github.io/pgi-docs/#Gst-1.0][API Reference]]
+- [[https://wiki.ubuntu.com/Novacut/GStreamer1.0][Novacut's porting guide]]
