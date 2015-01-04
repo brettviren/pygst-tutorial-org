@@ -2,6 +2,7 @@
 #+AUTHOR: Jens Persson and Ruben Gonzalez and Brett Viren
 #+VERSION: 1.0
 #+DESCRIPTION: Rescued by from Internet death by [[https://github.com/rubenrua/GstreamerCodeSnippets][rubenrua]]
+#+SETUPFILE: setup.org
 
 
 This tutorial aims at giving a brief introduction to the GStreamer 1.0 multimedia framework using its Python bindings.
@@ -117,7 +118,8 @@ To get information about a playbin run:
 This figure shows how playbin is built internally. The "optional stuff" are things that could be platform specific or things that you may set with properties.
 
 
-#+BEGIN_SRC ditaa :file playbin-block.png
+#+header: :file (by-backend (latex "playbin-block.pdf") (t "playbin-block.svg"))
+#+BEGIN_SRC ditaa
   
          /--------------------------------------------------------------------\
          |                           +----------------+   /---------------\   |
@@ -134,8 +136,9 @@ This figure shows how playbin is built internally. The "optional stuff" are thin
          \--------------------------------------------------------------------/
 #+END_SRC
 
+#+ATTR_HTML: :width 100%
 #+RESULTS:
-[[file:playbin-block.png]]
+[[file:playbin-block.svg]]
 
 
   
@@ -207,7 +210,8 @@ In this first example I have taken the Audio-Player from the Playbin chapter and
 
 Conceptually the pipeline is like:
 
-#+BEGIN_SRC ditaa :file pipeline-block.png
+#+header: :file (by-backend (latex "pipeline-block.pdf") (t "pipeline-block.svg"))
+#+BEGIN_SRC ditaa
     
                                  Example Gst.Pipeline 
     
@@ -218,11 +222,11 @@ Conceptually the pipeline is like:
            |   |         |     |       |     |              |     |          |   |
            |   +---------+     +-------+     +--------------+     +----------+   |
            \---------------------------------------------------------------------/
-  
 #+END_SRC
 
+#+ATTR_HTML: :width 100%
 #+RESULTS:
-[[file:pipeline-block.png]]
+[[file:pipeline-block.svg]]
 
 and the source:
 
@@ -234,7 +238,8 @@ THIS EXAMPLE IS NOT WORKING YET!!! You may submit a solution for it and we will 
 
 UPDATE! The competition is over. Mike Auty fixed it with a few queues. He passed on the grand prize though saying he's too busy coding so no time for dating. :D
 
-#+BEGIN_SRC ditaa :file pipeline-branch-block.png
+#+header: :file (by-backend (latex "pipeline-branch-block.pdf") (t "pipeline-branch-block.svg"))
+#+BEGIN_SRC ditaa
                                                            Gst.Pipeline 
            +----------------------------------------------------------------------------------------------------------+
            |                                                                                                          |
@@ -253,6 +258,7 @@ UPDATE! The competition is over. Mike Auty fixed it with a few queues. He passed
            +----------------------------------------------------------------------------------------------------------+
 #+END_SRC
 
+#+ATTR_HTML: :width 100%
 #+RESULTS:
 [[file:pipeline-branch-block.png]]
 
@@ -266,7 +272,8 @@ The elements in a pipeline connects to each other with pads and that's what the 
 Hehe, now this isn't so complicated as it may seem at a first glance. A /src/ is an object that is "sending" data and a /sink/ is an object that is "receiving" data. These objects connect to each other with /pads/. Pads could be either /src/ or /sink/. Most elements have both /src/ and /sink/ pads. For example, a =mad= MP3 decoder element looks something like the ASCII figure below:
 
 
-#+BEGIN_SRC ditaa :file sink-src-block.png
+#+header: :file (by-backend (latex "sink-src-block.pdf") (t "sink-src-block.svg"))
+#+BEGIN_SRC ditaa
                                     mad element
      +---------------------------------------------------------+
      |                                                         |
@@ -279,6 +286,7 @@ Hehe, now this isn't so complicated as it may seem at a first glance. A /src/ is
      +---------------------------------------------------------+
 #+END_SRC
 
+#+ATTR_HTML: :width 100%
 #+RESULTS:
 [[file:sink-src-block.png]]
 
@@ -309,7 +317,8 @@ The micro-language used in this function call is that of the =gst-launch= comman
 
 When you do manually link pads with the =.link()= method make sure that you link a /src/-pad to a /sink/-pad. No rule though without exceptions. A =Gst.GhostPad= should be linked to a pad of the same kind as it self. We have already showed how a ghostpad works in the addition to example 2.2. A [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html][=Gst.Bin=]] can't link to other objects if you don't link a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstGhostPad.html][=Gst.GhostPad=]] to an element inside the bin. The [[./playbin-example-video.py]] example in section [[Playbin]]  should look something like this:
 
-#+BEGIN_SRC ditaa :file playbin-pads-block.png
+#+header: :file (by-backend (latex "playbin-pads-block.pdf") (t "playbin-pads-block.svg"))
+#+BEGIN_SRC ditaa
     
                                                Gst.Bin
      /---------------------------------------------------------------------------- - -
@@ -327,6 +336,7 @@ When you do manually link pads with the =.link()= method make sure that you link
     
 #+END_SRC
 
+#+ATTR_HTML: :width 100%
 #+RESULTS:
 [[file:playbin-pads-block.png]]
 

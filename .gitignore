@@ -1,4 +1,8 @@
 *~
 *.pyc
-pygst-tutorial.pdf
 pygst-tutorial.tex
+pipeline-block.pdf
+pipeline-branch-block.pdf
+playbin-block.pdf
+playbin-pads-block.pdf
+sink-src-block.pdf

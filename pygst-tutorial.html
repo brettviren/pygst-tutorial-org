@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Python GStreamer Tutorial</title>
-<!-- 2015-01-04 Sun 09:36 -->
+<!-- 2015-01-04 Sun 10:31 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Jens Persson and Ruben Gonzalez and Brett Viren" />
@@ -90,6 +90,81 @@
     { background-color: #ffff00; color: #000000; font-weight: bold; }
   /*]]>*/-->
 </style>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="style.css" />
+<script type="text/javascript" src="functions.js"></script>
+
+<script type="text/javascript" src="http://orgmode.org/org-info.js">
+/**
+ *
+ * @source: http://orgmode.org/org-info.js
+ *
+ * @licstart  The following is the entire license notice for the
+ *  JavaScript code in http://orgmode.org/org-info.js.
+ *
+ * Copyright (C) 2012-2013 Free Software Foundation, Inc.
+ *
+ *
+ * The JavaScript code in this tag is free software: you can
+ * redistribute it and/or modify it under the terms of the GNU
+ * General Public License (GNU GPL) as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option)
+ * any later version.  The code is distributed WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+ *
+ * As additional permission under GNU GPL version 3 section 7, you
+ * may distribute non-source (e.g., minimized or compacted) forms of
+ * that code without the copy of the GNU GPL normally required by
+ * section 4, provided you include this license notice and a URL
+ * through which recipients can access the Corresponding Source.
+ *
+ * @licend  The above is the entire license notice
+ * for the JavaScript code in http://orgmode.org/org-info.js.
+ *
+ */
+</script>
+
+<script type="text/javascript">
+
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+
+<!--/*--><![CDATA[/*><!--*/
+org_html_manager.set("TOC_DEPTH", "3");
+org_html_manager.set("LINK_HOME", "https://github.com/brettviren/pygst-tutorial-org");
+org_html_manager.set("LINK_UP", ".");
+org_html_manager.set("LOCAL_TOC", "above");
+org_html_manager.set("VIEW_BUTTONS", "0");
+org_html_manager.set("MOUSE_HINT", "#cccccc");
+org_html_manager.set("FIXED_TOC", "0");
+org_html_manager.set("TOC", "1");
+org_html_manager.set("VIEW", "showall");
+org_html_manager.setup();  // activate after the parameters are set
+/*]]>*///-->
+</script>
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -138,7 +213,11 @@ for the JavaScript code in this tag.
 </script>
 </head>
 <body>
-<div id="content">
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="."> UP </a>
+ |
+ <a accesskey="H" href="https://github.com/brettviren/pygst-tutorial-org"> HOME </a>
+</div><div id="content">
 <h1 class="title">Python GStreamer Tutorial</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
@@ -343,7 +422,7 @@ This figure shows how playbin is built internally. The "optional stuff" are thin
 
 
 <div class="figure">
-<p><img src="playbin-block.png" alt="playbin-block.png" />
+<p><img src="playbin-block.svg" alt="playbin-block.svg" width="100%" />
 </p>
 </div>
 
@@ -643,7 +722,7 @@ Conceptually the pipeline is like:
 
 
 <div class="figure">
-<p><img src="pipeline-block.png" alt="pipeline-block.png" />
+<p><img src="pipeline-block.svg" alt="pipeline-block.svg" width="100%" />
 </p>
 </div>
 
@@ -738,7 +817,7 @@ UPDATE! The competition is over. Mike Auty fixed it with a few queues. He passed
 
 
 <div class="figure">
-<p><img src="pipeline-branch-block.png" alt="pipeline-branch-block.png" />
+<p><img src="pipeline-branch-block.svg" alt="pipeline-branch-block.svg" width="100%" />
 </p>
 </div>
 
@@ -873,7 +952,7 @@ Hehe, now this isn't so complicated as it may seem at a first glance. A <i>src</
 
 
 <div class="figure">
-<p><img src="sink-src-block.png" alt="sink-src-block.png" />
+<p><img src="sink-src-block.svg" alt="sink-src-block.svg" width="100%" />
 </p>
 </div>
 
@@ -920,7 +999,7 @@ When you do manually link pads with the <code>.link()</code> method make sure th
 
 
 <div class="figure">
-<p><img src="playbin-pads-block.png" alt="playbin-pads-block.png" />
+<p><img src="playbin-pads-block.svg" alt="playbin-pads-block.svg" width="100%" />
 </p>
 </div>
 
@@ -1743,8 +1822,8 @@ Gtk.main()
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Jens Persson and Ruben Gonzalez and Brett Viren</p>
-<p class="date">Created: 2015-01-04 Sun 09:36</p>
-<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.5h)</p>
+<p class="date">Created: 2015-01-04 Sun 10:31</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.5a)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

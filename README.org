@@ -1,4 +1,5 @@
 #+TITLE: Tutorial on using GStreamer Python Bindings (org-mode version)
+#+SETUPFILE: setup.org
 
 This repository holds a tutorial on using the Python bindings for GStreamer 1.0 (re)written in Emacs org-mode.
 
