@@ -6,3 +6,7 @@ pipeline-branch-block.pdf
 playbin-block.pdf
 playbin-pads-block.pdf
 sink-src-block.pdf
+*.ogg
+*.mp3
+*.mp4
+test.*
