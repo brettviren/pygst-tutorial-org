@@ -5,6 +5,7 @@
 #+SETUPFILE: setup.org
 
 
+
 This tutorial aims at giving a brief introduction to the GStreamer 1.0 multimedia framework using its Python bindings.
 
 * Meta
@@ -144,7 +145,7 @@ This figure shows how playbin is built internally. The "optional stuff" are thin
   
 The "*uri*" property should take any possible protocol supported by your Gstreamer plugins. One nice feature is that you may switch the sinks out for your own bins as shown below. Playbin always tries to set up the best possible pipeline for your specific environment so if you don't need any special features that are not implemented in playbin, it should in most cases just work "out of the box". Ok, time for a few examples.
 
-This first example is just a simple audio player, insert a file with absolute path and it'll play.  It is available as [[./playbin-example-audio.py]].  You can run it like:
+This first example is just a simple audio player, insert a file with absolute path and it'll play.  It's code is listed below.  You can run it like:
 
 #+BEGIN_SRC sh :eval no
   python playbin-example-audio.py
@@ -152,6 +153,7 @@ This first example is just a simple audio player, insert a file with absolute pa
 
 It will open a small window with a text entry.  Enter the full path to some audio file and click "Start".
 
+#+HTML: <a href="playbin-example-audio.py">playbin-example-audio.py</a>
 #+INCLUDE: playbin-example-audio.py src python
 
 A playbin plugs both audio and video streams automagically so I've switched the videosink out to a fakesink element which is Gstreamer's answer to /dev/null. If you want to enable video playback just comment out the following lines:
@@ -163,6 +165,7 @@ A playbin plugs both audio and video streams automagically so I've switched the 
 
 If you want to show the video output in a specified window you'll have to use the =enable_sync_message_emission()= method on the bus. Here is an example with the video window embedded in the program.
 
+#+HTML: <a href="playbin-example-video.py">playbin-example-video.py</a>
 #+INCLUDE: playbin-example-video.py src python
 
 And just to make things a little more complicated you can switch the playbins videosink to a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html][=Gst.Bin=]] with a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstGhostPad.html][=Gst.GhostPad=]] on it. Here's an example with a timeoverlay.
@@ -188,6 +191,7 @@ On peoples requests we add a CLI example which plays music, just run it with:
   python cliplayer.py /path/to/file1.mp3 /path/to/file2.ogg
 #+END_SRC
 
+#+HTML: <a href="playbin-example-cliplayer.py">playbin-example-cliplayer.py</a>
 #+INCLUDE: playbin-example-cliplayer.py src python
 
 A playbin implements a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPipeline.html][=Gst.Pipeline=]] element and that's what the next chapter is going to tell you more about.
@@ -230,6 +234,7 @@ Conceptually the pipeline is like:
 
 and the source:
 
+#+HTML: <a href="pipeline-example.py">pipeline-example.py</a>
 #+INCLUDE: pipeline-example.py src python
 
 The next example is playing Mpeg2 videos. Some demuxers, such as =mpegdemux=, uses dynamic pads which are created at runtime and therefor you can't link between the demuxer and the next element in the pipeline before the pad has been created at runtime. Watch out for the =demuxer_callback()= method below.
@@ -263,6 +268,7 @@ UPDATE! The competition is over. Mike Auty fixed it with a few queues. He passed
 [[file:pipeline-branch-block.png]]
 
 
+#+HTML: <a href="pipeline-branch-example.py">pipeline-branch-example.py</a>
 #+INCLUDE: pipeline-branch-example.py src python
 
 The elements in a pipeline connects to each other with pads and that's what the next chapter will tell you more about.
@@ -338,12 +344,13 @@ When you do manually link pads with the =.link()= method make sure that you link
 
 #+ATTR_HTML: :width 100%
 #+RESULTS:
-[[file:playbin-pads-block.png]]
+[[file:playbin-pads-block.svg]]
 
 And the ghostpad above should be created as type "sink"!!!
 
 Some pads are not always available and are only created when they are in use. Such pads are called "dynamical pads". The next example will show how to use dynamically created pads with an oggdemux. The link between the demuxer and the decoder is created with the =demuxer_callback()= method, which is called whenever a pad is created in the demuxer using the "pad-added" signal.
 
+#+HTML: <a href="dynamic-ghostpad-example.py">dynamic-ghostpad-example.py</a>
 #+INCLUDE: dynamic-ghostpad-example.py src python
 
 Now after reading through these four chapters you could need a break. Happy hacking and stay tuned for more interesting chapters to come.
@@ -354,6 +361,7 @@ Seeking in Gstreamer is done with the [[http://gstreamer.freedesktop.org/data/do
 
 In this next example we take the Vorbis-Player from example 4.1 and update it with some more stuff so it's able to seek and show duration and position.
 
+#+HTML: <a href="seeking-example.py">seeking-example.py</a>
 #+INCLUDE: seeking-example.py src python
 
 * Capabilities
@@ -378,16 +386,19 @@ And as =ximagesink= does not support hardware scaling you have to throw in a =vi
 
 To put the above examples in code you have to put the caps in a capsfilter element.
 
+#+HTML: <a href="capabilities-example.py">capabilities-example.py</a>
 #+INCLUDE: capabilities-example.py src python
 
 A frequently asked question is how to find out what resolution a file has and one way to do it is to check the caps on a decodebin element in paused state.
 
+#+HTML: <a href="capabilities-resolution-example.py">capabilities-resolution-example.py</a>
 #+INCLUDE: capabilities-resolution-example.py src python
 
 Note: The examples here in this tutorial have grown a bit lately and it's not easy to show working gstreamer stuff in not so many lines but I'll try as hard as I can to do just that. Maybe we have to have the code in separate files that you may take a look at if you find anything interesting. The examples share much code too and when the numbers of chapters beefs up so does the readers knowledge and they can make sense out of just a few lines of code instead of runable code examples. Well, time will tell how far we gets.
 
 In this example we will use the playbin from example 2.2 and switch its video-sink out for our own homemade bin, stuffed with some goodies. Now, let's say that you run a tv-station and you want to have your logo in the top right corner of the screen. For that you can use a textoverlay but for the fonts to be the exact same size on the screen no matter what kind of resolution the source has you have to specify a width so everything is scaled according to that.
 
+#+HTML: <a href="capabilities-playbin-example.py">capabilities-playbin-example.py</a>
 #+INCLUDE: capabilities-playbin-example.py src python
 
 * Videomixer
@@ -420,6 +431,7 @@ UPDATE! An anonymous dude solved the problem with an alphacolor element, many th
 
 In the next example we take the now working Mpeg2-Player from example 3.2 and pump it with the stuff shown above.
 
+#+HTML: <a href="videomixer-example.py">videomixer-example.py</a>
 #+INCLUDE: videomixer-example.py src python
 
 This fails with:
@@ -433,5 +445,6 @@ streaming task paused, reason not-negotiated (-4)
 
 Remember to peal the tape off your web cam lens.
 
+#+HTML: <a href="webcam-example.py">webcam-example.py</a>
 #+INCLUDE: webcam-example.py src python
 

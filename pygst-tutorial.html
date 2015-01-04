@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Python GStreamer Tutorial</title>
-<!-- 2015-01-04 Sun 10:31 -->
+<!-- 2015-01-04 Sun 11:34 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Jens Persson and Ruben Gonzalez and Brett Viren" />
@@ -446,6 +446,7 @@ This first example is just a simple audio player, insert a file with absolute pa
 It will open a small window with a text entry.  Enter the full path to some audio file and click "Start".
 </p>
 
+<a href="playbin-example-audio.py">playbin-example-audio.py</a>
 <div class="org-src-container">
 
 <pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
@@ -524,6 +525,7 @@ A playbin plugs both audio and video streams automagically so I've switched the 
 If you want to show the video output in a specified window you'll have to use the <code>enable_sync_message_emission()</code> method on the bus. Here is an example with the video window embedded in the program.
 </p>
 
+<a href="playbin-example-video.py">playbin-example-video.py</a>
 <div class="org-src-container">
 
 <pre class="src src-python"><span style="color: #b22222;">#</span><span style="color: #b22222;">!/usr/bin/env python</span>
@@ -1822,7 +1824,7 @@ Gtk.main()
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Jens Persson and Ruben Gonzalez and Brett Viren</p>
-<p class="date">Created: 2015-01-04 Sun 10:31</p>
+<p class="date">Created: 2015-01-04 Sun 11:34</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.5a)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
