@@ -1,4 +1,10 @@
 #+TITLE: Tutorial on using GStreamer Python Bindings in org-mode
 
-- [[./README.org][README]]
-- [[./pygst-tutorial.org][The Tutorial]]
+- [[./README.org][README]] has some additional meta-info
+- The Tutorial:
+   - [[./pygst-tutorial.org][org]]
+   - [[http://brettviren.github.io/pygst-tutorial-org/pygst-tutorial.pdf][PDF]]
+   - [[http://brettviren.github.io/pygst-tutorial-org/pygst-tutorial.html][HTML]]
+
+Note, the PDF and HTML are generated from the org file and may not always be fully in sync.
+ 

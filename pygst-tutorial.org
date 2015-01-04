@@ -4,11 +4,10 @@
 #+DESCRIPTION: Rescued by from Internet death by [[https://github.com/rubenrua/GstreamerCodeSnippets][rubenrua]]
 #+SETUPFILE: setup.org
 
-
-
 This tutorial aims at giving a brief introduction to the GStreamer 1.0 multimedia framework using its Python bindings.
 
 * Meta
+<<sec:meta>>
 
 A GStreamer application is built as a directed, acyclic graph.  In the figures these graphs are illustrated with the convention:
 
@@ -16,17 +15,24 @@ A GStreamer application is built as a directed, acyclic graph.  In the figures t
 - rounded solid line rectangles to indicate GStreamer /bins/ (and /pipelines/) subclasses of /elements/.
 - rounded dashed line rectangles to indicate /pads/
 
-
+#+BEGIN_HTML
+If you are reading this from a web browser that supports JavaScript you can use some of the built-in features for navigating the document.  Click on the "HELP" link or type "<tt>?</tt>" for instructions on how to use this feature.
+#+END_HTML
 
 * Introduction
+<<sec:intro>>
 
-This tutorial is meant to be a quick way to get to know more about Gstreamer but it'll take some time to write it though because we don't know it ourselves ... yet. We're usually using GNU/Linux and GTK in the examples but we try to keep the GUI code to an absolute minimum so it should not get in the way. Just remember that Gstreamer depends heavily on Glib so you must make sure that the [[http://pygstdocs.berlios.de/pygobject-reference/class-glibmainloop.html][Glib Mainloop]] is running if you want to catch events on the bus. We take for granted that you are at least a fairly descent Python coder. For problems related to the Python language we redirect you over to [[http://python.org/doc][Online Python docs]].
+This tutorial is meant to be a quick way to get to know more about GStreamer but it'll take some time to write it though because we don't know it ourselves ... yet. We're usually using GNU/Linux and GTK in the examples but we try to keep the GUI code to an absolute minimum so it should not get in the way. Just remember that GStreamer depends heavily on Glib so you must make sure that the [[https://lazka.github.io/pgi-docs/#GLib-2.0/structs/MainLoop.html][Glib Mainloop]] is running if you want to catch events on the bus. We take for granted that you are at least a fairly descent Python coder. For problems related to the Python language we redirect you over to [[http://python.org/doc][Online Python docs]].
 
-As you may see this tutorial is far from done and we are always looking for new people to join this project. If you want to write a chapter just do it and submit it to some of the people having commiting access to the source. You find us [[http://developer.berlios.de/projects/pygstdocs/][here]] (ed: dead). TIA
+There are also some example coding distributed with the PyGST source which you may browse at the [[http://cgit.freedesktop.org/gstreamer/gst-python/tree/examples][gst-python git repository]].  Reference documents for GStreamer and the rest of the ecosystem it relies on are available at [[https://lazka.github.io/pgi-docs/#Gst-1.0][lazka's GitHub site]].  The main [[http://gstreamer.freedesktop.org/][GStreamer]] site has [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/][Reference Manual]], [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/faq/][FAQ]], [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/manual/][Applications Development Manual]] and [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/pwg/][Plugin Writer's Guide]]. This tutorial targets the GStreamer 1.0 API which all v1.x releases should follow.  The Novacut project has a [[https://wiki.ubuntu.com/Novacut/GStreamer1.0][guide to porting]] Python applications from the prior 0.1 API to 1.0.
+Finally, GStreamer provides the [[http://docs.gstreamer.com/display/GstSDK/][GstSDK documentation]] which includes substantial C programming tutorials.
 
-There are also some example coding distributed with the PyGST source which you may browse [[http://cgit.freedesktop.org/gstreamer/gst-python/tree/examples][here]].
+As you may see this tutorial is far from done and we are always looking for new people to join this project. If you want to write a chapter, fix the examples, provide alternatives or otherwise improve this document please do so.  It is suggested to [[https://github.com/brettviren/pygst-tutorial-org/][clone the repository on GitHub]] and issue a pull request.  Note, the original source of this document was [[http://developer.berlios.de/projects/pygstdocs/][here]] but is now dead.
 
-Gstreamer comes with a few handy CLI programs that helps you find and try out what you need in a very fast and convenient way. With "gst-inspect" you can track highlevel elements which are shipped with the various plugins packages.
+** Command Line
+<<subsec:cli>>
+
+Before getting started with Python some of the command line interface (CLI) programs that come with GStreamer are explored.  Besides being generally useful they can help you find and try out what you need in a very fast and convenient way without writing a bit of code. With [[http://docs.gstreamer.com/display/GstSDK/gst-inspect][=gst-inspect=]] you can track highlevel elements which are shipped with the various plugins packages.
 
 #+BEGIN_SRC sh :eval no
   man gst-inspect-1.0
@@ -43,8 +49,7 @@ If you are looking for an element but you don't know its name you can use it wit
 : lame:  lamemp3enc: L.A.M.E. mp3 encoder
 : libav:  avdec_mp3adufloat: libav ADU (Application Data Unit) MP3 (MPEG audio layer 3) decoder
 
-
-Playbin is an autoplugger element which usually plays anything you throw at it, if you have the appropriate plugins installed.
+The [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-playbin.html][=playbin=]] element is an autoplugger which usually plays anything you throw at it, if you have the appropriate plugins installed.
 
 #+BEGIN_SRC sh :results none :exports code
    gst-inspect-1.0 playbin > gst-inspect-playbin.txt
@@ -52,7 +57,7 @@ Playbin is an autoplugger element which usually plays anything you throw at it, 
 
 Browse example output [[./gst-inspect-playbin.txt][here]]. 
 
-You can also run pipelines directly in a terminal with "gst-launch":
+You can also run pipelines directly in a terminal with [[http://docs.gstreamer.com/display/GstSDK/gst-launch][=gst-launch=]]:
 
 #+BEGIN_SRC sh :eval no
   man gst-launch-1.0
@@ -61,7 +66,8 @@ You can also run pipelines directly in a terminal with "gst-launch":
 For playing a file with playbin:
 
 #+BEGIN_SRC sh :eval no
-  gst-launch-1.0 playbin uri=http://docs.gstreamer.com/media/sintel_trailer-480p.webm
+  gst-launch-1.0 playbin \
+      uri=http://docs.gstreamer.com/media/sintel_trailer-480p.webm
 #+END_SRC
 
 It's also possible to link elements together with "!":
@@ -79,7 +85,8 @@ You may also make different streams in the pipeline:
 Or, you can make a single frame JPEG
 
 #+BEGIN_SRC sh :results none :exports code
-  gst-launch-1.0 videotestsrc num-buffers=1 ! jpegenc ! filesink location=videotestsrc-frame.jpg
+  gst-launch-1.0 videotestsrc num-buffers=1 ! jpegenc ! \
+    filesink location=videotestsrc-frame.jpg
 #+END_SRC
 
 [[./videotestsrc-frame.jpg]]
@@ -87,16 +94,18 @@ Or, you can make a single frame JPEG
 If you are using the "name" property you may use the same element more than once. Just put a "." after its name, eg with oggmux here.
 
 #+BEGIN_SRC sh :eval no
-  gst-launch-1.0 audiotestsrc ! vorbisenc ! oggmux name=mux ! filesink location=file.ogg videotestsrc ! theoraenc ! mux.
+  gst-launch-1.0 audiotestsrc ! vorbisenc ! oggmux name=mux ! \
+    filesink location=file.ogg videotestsrc ! theoraenc ! mux.
 #+END_SRC
 
 In the next chapter we will show you more examples with Playbin.
 
 * Playbin
+<<sec:playbin>>
 
-A playbin is a highlevel, automatic, audio and video player. You create a playbin object with:
+The [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-playbin.html][=playbin=]] element was exercised from the command line in section [[subsec:cli]] and in this section it will be used from Python.  It is a high-level, automatic audio and video player. You create a =playbin= object with:
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
   import gi
   gi.require_version('Gst', '1.0')
   from gi.repository import Gst
@@ -143,7 +152,10 @@ This figure shows how playbin is built internally. The "optional stuff" are thin
 
 
   
-The "*uri*" property should take any possible protocol supported by your Gstreamer plugins. One nice feature is that you may switch the sinks out for your own bins as shown below. Playbin always tries to set up the best possible pipeline for your specific environment so if you don't need any special features that are not implemented in playbin, it should in most cases just work "out of the box". Ok, time for a few examples.
+The "*uri*" property should take any possible protocol supported by your GStreamer plugins. One nice feature is that you may switch the sinks out for your own bins as shown below. Playbin always tries to set up the best possible pipeline for your specific environment so if you don't need any special features that are not implemented in playbin, it should in most cases just work "out of the box". Ok, time for a few examples.
+
+** Audio with Playbin
+<<subsec:playbinaudio>>
 
 This first example is just a simple audio player, insert a file with absolute path and it'll play.  It's code is listed below.  You can run it like:
 
@@ -156,19 +168,22 @@ It will open a small window with a text entry.  Enter the full path to some audi
 #+HTML: <a href="playbin-example-audio.py">playbin-example-audio.py</a>
 #+INCLUDE: playbin-example-audio.py src python
 
-A playbin plugs both audio and video streams automagically so I've switched the videosink out to a fakesink element which is Gstreamer's answer to /dev/null. If you want to enable video playback just comment out the following lines:
+** Adding Video 
+<<subsec:playbinvideo>>
+
+A =playbin= plugs both audio and video streams automagically and the =videosink= has been switched out to a =fakesink= element which is GStreamer's answer to directing output to =/dev/null=. If you want to enable video playback just comment out the following lines:
 
 #+BEGIN_SRC python :eval no
   fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
   self.player.set_property("video-sink", fakesink)
 #+END_SRC
 
-If you want to show the video output in a specified window you'll have to use the =enable_sync_message_emission()= method on the bus. Here is an example with the video window embedded in the program.
+If you want to show the video output in a specified window you'll have to use the [[https://lazka.github.io/pgi-docs/#Gst-1.0/classes/Bus.html#Gst.Bus.enable_sync_message_emission][=enable_sync_message_emission()=]] method on the bus. Here is an example with the video window embedded in the program.
 
 #+HTML: <a href="playbin-example-video.py">playbin-example-video.py</a>
 #+INCLUDE: playbin-example-video.py src python
 
-And just to make things a little more complicated you can switch the playbins videosink to a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html][=Gst.Bin=]] with a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstGhostPad.html][=Gst.GhostPad=]] on it. Here's an example with a timeoverlay.
+And just to make things a little more complicated you can switch the =playbin='s video sink to a {{{gstclass(Bin)}}} with a {{{gstclass(GhostPad)}}} on it. Here's an example with a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-timeoverlay.html][=timeoverlay=]].
 
 #+BEGIN_SRC python :eval no
   bin = Gst.Bin.new("my-bin")
@@ -183,9 +198,9 @@ And just to make things a little more complicated you can switch the playbins vi
   self.player.set_property("video-sink", bin)
 #+END_SRC
 
-Add that code to the example above and you'll get a timeoverlay too. We'll talk more about ghostpads later.
+Add that code to the example above and you'll get a =timeoverlay= too. We'll talk more about [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/manual/html/section-pads-ghost.html]["ghost pads"]] later.
 
-On peoples requests we add a CLI example which plays music, just run it with:
+Here now adds a CLI example which plays music.  It can be run it with:
 
 #+BEGIN_SRC sh :eval no
   python cliplayer.py /path/to/file1.mp3 /path/to/file2.ogg
@@ -194,25 +209,28 @@ On peoples requests we add a CLI example which plays music, just run it with:
 #+HTML: <a href="playbin-example-cliplayer.py">playbin-example-cliplayer.py</a>
 #+INCLUDE: playbin-example-cliplayer.py src python
 
-A playbin implements a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPipeline.html][=Gst.Pipeline=]] element and that's what the next chapter is going to tell you more about.
+A =playbin= implements a {{{gstclass(Pipeline)}}} element and that's what the next chapter is going to tell you more about.
 
 * Pipeline
+<<sec:pipeline>>
 
-A [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPipeline.html][=Gst.Pipeline=]] is a top-level bin with its own bus and clock. If your program only contains one bin-like object, this is what you're looking for. You create a pipeline object with:
+A {{{gstclass(Pipeline)}}} is a top-level bin with its own bus and clock. If your program only contains one /bin/-like object, this is what you're looking for. You create a pipeline object with:
 
 #+BEGIN_SRC python :eval no
-  my_pipeline = Gst.Pipeline("my-pipeline")
+  my_pipeline = Gst.Pipeline.new("my-pipeline")
 #+END_SRC
 
-A pipeline is just a "container" where you can put other objects and when everything is in place and the file to play is specified you just set the pipelines state to [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html#GstBin.notes][=Gst.State.PLAYING=]] and there should be multimedia coming out of it.
+A pipeline is a "container" where you can put other objects and when everything is in place and the file to play is specified you set the pipeline's state to [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html#GstBin.notes][=Gst.State.PLAYING=]] and there should be multimedia coming out of it.
 
-In this first example I have taken the Audio-Player from the Playbin chapter and switched the playbin out for my own mp3 decoding capable pipeline. You can also testdrive pipelines with a program called gst-launch directly in a shell. That is, the next example below would look like this:
+** Pipeline Audio Player
+
+The first example here starts with the audio player from section [[sec:playbin]] and switches the =playbin= for the =mad= decoding pipeline that is capable of handling MP3 streams.  Before coding it in Python it can be tested using =gst-launch=.  
 
 #+BEGIN_SRC sh :eval no
   gst-launch-1.0 filesrc location=file.mp3 ! mad ! audioconvert ! alsasink
 #+END_SRC
 
-Conceptually the pipeline is like:
+Conceptually this pipeline looks like:
 
 #+header: :file (by-backend (latex "pipeline-block.pdf") (t "pipeline-block.svg"))
 #+BEGIN_SRC ditaa
@@ -232,16 +250,14 @@ Conceptually the pipeline is like:
 #+RESULTS:
 [[file:pipeline-block.svg]]
 
-and the source:
+Done in Python this would look like =pipeline-example.py=:
 
 #+HTML: <a href="pipeline-example.py">pipeline-example.py</a>
 #+INCLUDE: pipeline-example.py src python
 
-The next example is playing Mpeg2 videos. Some demuxers, such as =mpegdemux=, uses dynamic pads which are created at runtime and therefor you can't link between the demuxer and the next element in the pipeline before the pad has been created at runtime. Watch out for the =demuxer_callback()= method below.
+** Adding Video to the Pipeline
 
-THIS EXAMPLE IS NOT WORKING YET!!! You may submit a solution for it and we will announce a winner that gets, at your option, a date with Richard M Stallman, Eric S Raymond or Scarlett Johansson. And before anyone asks, NO, you may only choose ONE of the above choices! TIA
-
-UPDATE! The competition is over. Mike Auty fixed it with a few queues. He passed on the grand prize though saying he's too busy coding so no time for dating. :D
+The next example is playing MPEG2 videos. Some demuxers, such as =mpegdemux=, uses dynamic pads which are created at runtime and therefor you can't link between the demuxer and the next element in the pipeline before the pad has been created at runtime. Watch out for the =demuxer_callback()= method below.
 
 #+header: :file (by-backend (latex "pipeline-branch-block.pdf") (t "pipeline-branch-block.svg"))
 #+BEGIN_SRC ditaa
@@ -274,8 +290,9 @@ UPDATE! The competition is over. Mike Auty fixed it with a few queues. He passed
 The elements in a pipeline connects to each other with pads and that's what the next chapter will tell you more about.
 
 * Src, sink, pad ... oh my!
+<<sec:srcsinkpad>>
 
-Hehe, now this isn't so complicated as it may seem at a first glance. A /src/ is an object that is "sending" data and a /sink/ is an object that is "receiving" data. These objects connect to each other with /pads/. Pads could be either /src/ or /sink/. Most elements have both /src/ and /sink/ pads. For example, a =mad= MP3 decoder element looks something like the ASCII figure below:
+As their names imply, a /src/ is an object that is "sending" data and a /sink/ is an object that is "receiving" data. These objects connect to each other with /pads/. Pads could be either /src/ or /sink/. Most elements have both /src/ and /sink/ pads. For example, the =mad= MP3 decoder element looks something like the figure below:
 
 
 #+header: :file (by-backend (latex "sink-src-block.pdf") (t "sink-src-block.svg"))
@@ -313,15 +330,16 @@ GObject
                          +----GstMad
 #+END_EXAMPLE 
 
-There are many different ways to link elements together. In [[./pipeline-example.py]] we used the =Gst.Pipeline.add()= and the =.link()= method of the produced elements. You can also make a completely ready-to-go pipeline with the =parse_launch()= function. The many =.add()= calls in that example can be rewritten as:
+There are many different ways to link elements together. In =pipeline-example.py= we used the =Gst.Pipeline.add()= and the =.link()= method of the produced elements. You can also make a completely ready-to-go pipeline with the =parse_launch()= function. The many =.add()= calls in that example can be rewritten as:
 
 #+BEGIN_SRC python :eval no
-  mp3_pipeline = Gst.parse_launch("filesrc name=source ! mad name=decoder ! audioconvert name=conv ! alsasink name=sink")
+  mp3_pipeline = Gst.parse_launch("filesrc name=source ! mad name=decoder ! " \
+                                  "audioconvert name=conv ! alsasink name=sink")
 #+END_SRC
 
 The micro-language used in this function call is that of the =gst-launch= command line program.
 
-When you do manually link pads with the =.link()= method make sure that you link a /src/-pad to a /sink/-pad. No rule though without exceptions. A =Gst.GhostPad= should be linked to a pad of the same kind as it self. We have already showed how a ghostpad works in the addition to example 2.2. A [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html][=Gst.Bin=]] can't link to other objects if you don't link a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstGhostPad.html][=Gst.GhostPad=]] to an element inside the bin. The [[./playbin-example-video.py]] example in section [[Playbin]]  should look something like this:
+When you do manually link pads with the =.link()= method make sure that you link a /src/-pad to a /sink/-pad. No rule though without exceptions. A {{{gstclass(GhostPad)}}} should be linked to a pad of the same kind as itself. We have already showed how a ghost pad works in the addition to example 2.2. A [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html][=Gst.Bin=]] can't link to other objects if you don't link a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstGhostPad.html][=Gst.GhostPad=]] to an element inside the bin. The =playbin-example-video.py= example in section [[sec:playbin]]  should look something like this:
 
 #+header: :file (by-backend (latex "playbin-pads-block.pdf") (t "playbin-pads-block.svg"))
 #+BEGIN_SRC ditaa
@@ -348,7 +366,7 @@ When you do manually link pads with the =.link()= method make sure that you link
 
 And the ghostpad above should be created as type "sink"!!!
 
-Some pads are not always available and are only created when they are in use. Such pads are called "dynamical pads". The next example will show how to use dynamically created pads with an oggdemux. The link between the demuxer and the decoder is created with the =demuxer_callback()= method, which is called whenever a pad is created in the demuxer using the "pad-added" signal.
+Some pads are not always available and are only created when they are in use. Such pads are called "dynamical pads". The next example will show how to use dynamically created pads with an [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-oggdemux.html][=oggdemux=]]. The link between the demuxer and the decoder is created with the =demuxer_callback()= method, which is called whenever a pad is created in the demuxer using the "=pad-added=" signal.
 
 #+HTML: <a href="dynamic-ghostpad-example.py">dynamic-ghostpad-example.py</a>
 #+INCLUDE: dynamic-ghostpad-example.py src python
@@ -356,8 +374,10 @@ Some pads are not always available and are only created when they are in use. Su
 Now after reading through these four chapters you could need a break. Happy hacking and stay tuned for more interesting chapters to come.
 
 *  Seeking
+<<sec:seeking>>
 
-Seeking in Gstreamer is done with the [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-seek][=seek()=]] and [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-seek-simple][=seek_simple()=]] methods. To be able to seek you will also need to tell Gstreamer what kind of seek it should do. In the following example we will use a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstInfo.html#GST-TIME-FORMAT:CAPS][=Gst.Format.TIME=]] format constant which will, as you may guess, do a time seek. We will also use the =query_duration()= and =query_position()= methods to get the file length and how long the file has currently played. Gstreamer uses nanoseconds by default so you have to adjust to that.
+Seeking in GStreamer is done with the [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-seek][=seek()=]] and [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-seek-simple][=seek_simple()=]] methods of {{{gstclass(Element)}}}. 
+To be able to seek you will also need to tell GStreamer what kind of seek it should do. In the following example we will use a [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstInfo.html#GST-TIME-FORMAT:CAPS][=TIME= value]] (of {{{gstenum(Format)}}} enum) format constant which will, as you may guess, request a time seek. We will also use the [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-query-duration][=query_duration()=]] and [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html#gst-element-query-position][=query_position()=]] methods to get the file length and how long the file has currently played. GStreamer uses nanoseconds by default so you have to adjust to that.
 
 In this next example we take the Vorbis-Player from example 4.1 and update it with some more stuff so it's able to seek and show duration and position.
 
@@ -365,23 +385,27 @@ In this next example we take the Vorbis-Player from example 4.1 and update it wi
 #+INCLUDE: seeking-example.py src python
 
 * Capabilities
+<<sec:caps>>
 
-Capabilities, =Gst.Caps=, is a container where you may store information that you may pass on to a =Gst.PadTemplate=. When you set the pipeline state to either playing or paused the elements pads negotiates what caps to use for the stream. Now the following pipeline works perfectly:
+Capabilities, {{{gststruct(Caps)}}}, is a container where you may store information that you may pass on to a {{{gstclass(PadTemplate)}}}. When you set the pipeline state to either playing or paused the elements pads negotiates what caps to use for the stream. Now the following pipeline works perfectly:
 
 #+BEGIN_SRC sh :eval no
-  gst-launch-1.0  videotestsrc ! video/x-raw, width=320, height=240 ! xvimagesink
+  gst-launch-1.0  videotestsrc ! video/x-raw, width=320, height=240 ! \
+    xvimagesink
 #+END_SRC
 
-But if you try to switch out the =xvimagesink= for an =ximagesink= you will notice that it wouldn't work. That's because =ximagesink= can't handle =video/x-raw-yuv= so you must put in an element BEFORE in the pipeline that does.
+But if you try to switch out the [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-xvimagesink.html][=xvimagesink=]] for an [[http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-plugins/html/gst-plugins-base-plugins-ximagesink.html][=ximagesink=]] you will notice that it wouldn't work. That's because =ximagesink= can't handle =video/x-raw= so you must put in an element BEFORE in the pipeline that does.
 
 #+BEGIN_SRC sh :eval no
-  gst-launch-1.0  videotestsrc ! video/x-raw, width=320, height=240 ! videoconvert ! ximagesink
+  gst-launch-1.0  videotestsrc ! video/x-raw, width=320, height=240 ! \
+    videoconvert ! ximagesink
 #+END_SRC
 
 And as =ximagesink= does not support hardware scaling you have to throw in a =videoscale= element too if you want software scaling.
 
 #+BEGIN_SRC sh :eval no
-  gst-launch-1.0  videotestsrc ! video/x-raw, width=320, height=240 ! videoscale ! videoconvert ! ximagesink
+  gst-launch-1.0  videotestsrc ! video/x-raw, width=320, height=240 ! \
+    videoscale ! videoconvert ! ximagesink
 #+END_SRC
 
 To put the above examples in code you have to put the caps in a capsfilter element.
@@ -394,22 +418,24 @@ A frequently asked question is how to find out what resolution a file has and on
 #+HTML: <a href="capabilities-resolution-example.py">capabilities-resolution-example.py</a>
 #+INCLUDE: capabilities-resolution-example.py src python
 
-Note: The examples here in this tutorial have grown a bit lately and it's not easy to show working gstreamer stuff in not so many lines but I'll try as hard as I can to do just that. Maybe we have to have the code in separate files that you may take a look at if you find anything interesting. The examples share much code too and when the numbers of chapters beefs up so does the readers knowledge and they can make sense out of just a few lines of code instead of runable code examples. Well, time will tell how far we gets.
-
-In this example we will use the playbin from example 2.2 and switch its video-sink out for our own homemade bin, stuffed with some goodies. Now, let's say that you run a tv-station and you want to have your logo in the top right corner of the screen. For that you can use a textoverlay but for the fonts to be the exact same size on the screen no matter what kind of resolution the source has you have to specify a width so everything is scaled according to that.
+In the next example we will use the =playbin= from section [[subsec:playbinvideo]] and switch its video-sink out for our own homemade bin filled with some elements. Now, let's say that you run a tv-station and you want to have your logo in the top right corner of the screen. For that you can use a =textoverlay= but for the fonts to be the exact same size on the screen no matter what kind of resolution the source has you have to specify a width so everything is scaled according to that.
 
 #+HTML: <a href="capabilities-playbin-example.py">capabilities-playbin-example.py</a>
 #+INCLUDE: capabilities-playbin-example.py src python
 
 * Videomixer
+<<sec:vidmix>>
 
-The videomixer element makes it possible to mix different videostreams together. Here is a CLI example:
+The =videomixer= element makes it possible to mix different video streams together. Here is a CLI example:
 
 #+BEGIN_SRC sh :eval no
-  gst-launch-1.0 filesrc location=tvlogo.png ! pngdec ! alphacolor ! videoconvert ! videobox border-alpha=0 alpha=0.5 top=-20 left=-200 ! videomixer name=mix ! videoconvert ! autovideosink videotestsrc ! video/x-raw, width=320, height=240 ! mix.
+  gst-launch-1.0 filesrc location=tvlogo.png ! pngdec ! alphacolor ! \
+    videoconvert ! videobox border-alpha=0 alpha=0.5 top=-20 left=-200 ! \
+    videomixer name=mix ! videoconvert ! autovideosink videotestsrc ! \
+    video/x-raw, width=320, height=240 ! mix.
 #+END_SRC
 
-This fails with:
+Fixme: this fails with:
 
 #+BEGIN_EXAMPLE
 Setting pipeline to PAUSED ...
@@ -423,18 +449,14 @@ Setting pipeline to NULL ...
 Freeing pipeline ...
 #+END_EXAMPLE
 
-You have to make a PNG image (100x100 px) to be able to run it. With the =videobox= element you can move the image around and add more alpha channels.
+You have to make a [[./tvlogo.png][=tvlogo.png=]] image (100x100 px) to be able to run it. With the =videobox= element you can move the image around and add more alpha channels.
 
-NEW COMPETITION! I can't figure out how to make a transparent alpha channel for the PNG in the pipeline above so if anyone makes it work the prize from example 3.2 will be given to this winner instead as the other one passed. TIA
-
-UPDATE! An anonymous dude solved the problem with an alphacolor element, many thanks man.
-
-In the next example we take the now working Mpeg2-Player from example 3.2 and pump it with the stuff shown above.
+In the next example we take the now working Mpeg2-Player from section [[sec:pipeline]] and add the elements shown above.
 
 #+HTML: <a href="videomixer-example.py">videomixer-example.py</a>
 #+INCLUDE: videomixer-example.py src python
 
-This fails with:
+Fixme: This fails with:
 
 #+BEGIN_EXAMPLE
 Error: Internal data flow error. gstbasesrc.c(2865): gst_base_src_loop (): /GstPipeline:player/GstFileSrc:png-source:
@@ -442,9 +464,12 @@ streaming task paused, reason not-negotiated (-4)
 #+END_EXAMPLE
 
 * Webcam Viewer
+<<sec:webcam>>
 
-Remember to peal the tape off your web cam lens.
+Remember to peal the tape off your web cam lens before testing this.
 
 #+HTML: <a href="webcam-example.py">webcam-example.py</a>
 #+INCLUDE: webcam-example.py src python
+
+
 

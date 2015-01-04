@@ -1,7 +1,6 @@
-
 #!/usr/bin/env python
 
-import sys, os
+import os
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject, Gtk

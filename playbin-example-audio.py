@@ -1,13 +1,12 @@
-
 #!/usr/bin/env python
 
-import sys, os
+import os
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject, Gtk
 
 class GTK_Main(object):
-    
+
     def __init__(self):
         window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         window.set_title("Audio-Player")

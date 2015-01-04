@@ -11,6 +11,8 @@ The main document is [[./pygst-tutorial.org]].  An HTML export of this document 
 http://brettviren.github.io/pygst-tutorial-org/pygst-tutorial.html
 #+END_QUOTE
 
+Or you can download the document as a [[http://brettviren.github.io/pygst-tutorial-org/pygst-tutorial.pdf][PDF]].
+
 The starting point for this document was [[https://github.com/rubenrua/GstreamerCodeSnippets/tree/master/1.0/Python/pygst-tutorial][Ruben Gonzalez's]] rescue from Google's cache of the original by Jens Persson.  This document differs in:
 
 - Ruben's markdown converted to org-mode
