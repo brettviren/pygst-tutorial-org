@@ -1,17 +1,24 @@
-#+TITLE: Tutorial on using GStreamer Python Bindings in org-mode
+#+TITLE: Tutorial on using GStreamer Python Bindings (org-mode version)
 
-This repository holds a tutorial written in Emacs org-mode on using the Python bindings for GStreamer 1.0.  You can read it as HTML at: 
+This repository holds a tutorial on using the Python bindings for GStreamer 1.0 (re)written in Emacs org-mode.
 
+Note: this was mostly an exercise for me to learn the topic.  There is hardly any novel work here.
+
+The main document is [[./pygst-tutorial.org]].  An HTML export of this document is also committed but may not always be up to date.  You can read it online at: 
+
+#+BEGIN_QUOTE
 http://brettviren.github.io/pygst-tutorial-org/pygst-tutorial.html
+#+END_QUOTE
 
-The starting point for this document was from [[https://github.com/rubenrua/GstreamerCodeSnippets/tree/master/1.0/Python/pygst-tutorial][Ruben Gonzalez's]] rescue from Google's cache of the original by Jens Persson.  What I have done is to convert it into an org-mode document, make small edits of the text, go through and check the code for correctness and extend the conversion of the examples from GST 0.1 to 1.0.
+The starting point for this document was [[https://github.com/rubenrua/GstreamerCodeSnippets/tree/master/1.0/Python/pygst-tutorial][Ruben Gonzalez's]] rescue from Google's cache of the original by Jens Persson.  This document differs in:
 
-The main document is [[./pygst-tutorial.org]].  If your read this Emacs many of the examples will run from the document (=C-c C-c= on the source block) or you can tangle the examples to a file (=C-c C-v t=). 
+- Ruben's markdown converted to org-mode
+- Command line and Python examples tested and some fixed for GStreamer 1.0 (problems may remain)
+- Change the ASCII art into [[http://ditaa.sourceforge.net/][ditaa]] diagrams
+- Text edited for minor language things
 
-I commit these tangled/exported derived files here too but they may not always be kept up to date with the org source.
+Other useful sources of info on using GStreamer 1.0 Python bindings:
 
-Other sources of info on using GStreamer 1.0 Python bindings:
-
-- [[https://github.com/rubenrua/GstreamerCodeSnippets][GstreamerCodeSnippets]]
+- Ruben's [[https://github.com/rubenrua/GstreamerCodeSnippets][GstreamerCodeSnippets]]
 - [[https://lazka.github.io/pgi-docs/#Gst-1.0][API Reference]]
 - [[https://wiki.ubuntu.com/Novacut/GStreamer1.0][Novacut's porting guide]]

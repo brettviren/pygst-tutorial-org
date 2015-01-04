@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Python GStreamer Tutorial</title>
-<!-- 2015-01-03 Sat 19:35 -->
+<!-- 2015-01-04 Sun 09:36 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Jens Persson and Ruben Gonzalez and Brett Viren" />
@@ -157,17 +157,28 @@ for the JavaScript code in this tag.
 </div>
 </div>
 <p>
-This tutorial aims at giving a brief introduction to the GStreamer multimedia framework.
+This tutorial aims at giving a brief introduction to the GStreamer 1.0 multimedia framework using its Python bindings.
 </p>
 
 <div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Meta</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-Diagrams use solid line rectangles to indicate "elements", rounded solid line rectangles to indicate "bins" (and "pipelines"), rounded dashed rectangles to indicate "pads".
+A GStreamer application is built as a directed, acyclic graph.  In the figures these graphs are illustrated with the convention:
 </p>
+
+<ul class="org-ul">
+<li>right solid line rectangles indicate basic GStreamer <i>elements</i>
+</li>
+<li>rounded solid line rectangles to indicate GStreamer <i>bins</i> (and <i>pipelines</i>) subclasses of <i>elements</i>.
+</li>
+<li>rounded dashed line rectangles to indicate <i>pads</i>
+</li>
+</ul>
 </div>
 </div>
+
+
 <div id="outline-container-sec-2" class="outline-2">
 <h2 id="sec-2"><span class="section-number-2">2</span> Introduction</h2>
 <div class="outline-text-2" id="text-2">
@@ -594,7 +605,6 @@ loop.run()
 </pre>
 </div>
 
-
 <p>
 A playbin implements a <a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPipeline.html"><code>Gst.Pipeline</code></a> element and that's what the next chapter is going to tell you more about.
 </p>
@@ -713,7 +723,6 @@ GObject.threads_init()
 Gtk.main()
 </pre>
 </div>
-
 
 <p>
 The next example is playing Mpeg2 videos. Some demuxers, such as <code>mpegdemux</code>, uses dynamic pads which are created at runtime and therefor you can't link between the demuxer and the next element in the pipeline before the pad has been created at runtime. Watch out for the <code>demuxer_callback()</code> method below.
@@ -848,10 +857,6 @@ GObject.threads_init()
 Gtk.main()
 </pre>
 </div>
-
-<p>
-This example is here <a href="./pipeline-branch-example.py">./pipeline-branch-example.py</a>.
-</p>
 
 <p>
 The elements in a pipeline connects to each other with pads and that's what the next chapter will tell you more about.
@@ -1008,7 +1013,6 @@ GTK_Main()
 Gtk.main()
 </pre>
 </div>
-
 
 <p>
 Now after reading through these four chapters you could need a break. Happy hacking and stay tuned for more interesting chapters to come.
@@ -1180,7 +1184,6 @@ Gtk.main()
 </div>
 </div>
 </div>
-
 <div id="outline-container-sec-7" class="outline-2">
 <h2 id="sec-7"><span class="section-number-2">7</span> Capabilities</h2>
 <div class="outline-text-2" id="text-7">
@@ -1351,7 +1354,6 @@ Gtk.main()
 </pre>
 </div>
 
-
 <p>
 Note: The examples here in this tutorial have grown a bit lately and it's not easy to show working gstreamer stuff in not so many lines but I'll try as hard as I can to do just that. Maybe we have to have the code in separate files that you may take a look at if you find anything interesting. The examples share much code too and when the numbers of chapters beefs up so does the readers knowledge and they can make sense out of just a few lines of code instead of runable code examples. Well, time will tell how far we gets.
 </p>
@@ -1359,7 +1361,6 @@ Note: The examples here in this tutorial have grown a bit lately and it's not ea
 <p>
 In this example we will use the playbin from example 2.2 and switch its video-sink out for our own homemade bin, stuffed with some goodies. Now, let's say that you run a tv-station and you want to have your logo in the top right corner of the screen. For that you can use a textoverlay but for the fonts to be the exact same size on the screen no matter what kind of resolution the source has you have to specify a width so everything is scaled according to that.
 </p>
-
 
 <div class="org-src-container">
 
@@ -1742,7 +1743,7 @@ Gtk.main()
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Jens Persson and Ruben Gonzalez and Brett Viren</p>
-<p class="date">Created: 2015-01-03 Sat 19:35</p>
+<p class="date">Created: 2015-01-04 Sun 09:36</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.5h)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

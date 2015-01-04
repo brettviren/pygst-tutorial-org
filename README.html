@@ -3,8 +3,8 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<title>Tutorial on using GStreamer Python Bindings in org-mode</title>
-<!-- 2015-01-04 Sun 09:03 -->
+<title>Tutorial on using GStreamer Python Bindings (org-mode version)</title>
+<!-- 2015-01-04 Sun 09:45 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Brett Viren" />
@@ -137,25 +137,46 @@ for the JavaScript code in this tag.
 </head>
 <body>
 <div id="content">
-<h1 class="title">Tutorial on using GStreamer Python Bindings in org-mode</h1>
+<h1 class="title">Tutorial on using GStreamer Python Bindings (org-mode version)</h1>
 <p>
-This holds a tutorial written in Emacs org-mode on using the Python bindings for GStreamer 1.0.  The starting point was from <a href="https://github.com/rubenrua/GstreamerCodeSnippets/tree/master/1.0/Python/pygst-tutorial">Ruben Gonzalez's</a> rescue of the original by Jens Persson.  What I have done is to convert it into an org-mode document, make small edits of the text, go through and check the code for correctness and extend the conversion of the examples from GST 0.1 to 1.0.
+This repository holds a tutorial on using the Python bindings for GStreamer 1.0 (re)written in Emacs org-mode.
 </p>
 
 <p>
-The main document is <a href="./pygst-tutorial.html">./pygst-tutorial.html</a>.  If your read this Emacs many of the examples will run from the document (<code>C-c C-c</code> on the source block) or you can tangle the examples to a file (<code>C-c C-v t</code>). 
+Note: this was mostly an exercise for me to learn the topic.  There is hardly any novel work here.
 </p>
 
 <p>
-I commit these tangled/exported derived files here too but they may not always be kept up to date with the org source.
+The main document is <a href="./pygst-tutorial.html">./pygst-tutorial.html</a>.  An HTML export of this document is also committed but may not always be up to date.  You can read it online at: 
 </p>
 
+<blockquote>
 <p>
-Sources of info:
+<a href="http://brettviren.github.io/pygst-tutorial-org/pygst-tutorial.html">http://brettviren.github.io/pygst-tutorial-org/pygst-tutorial.html</a>
+</p>
+</blockquote>
+
+<p>
+The starting point for this document was <a href="https://github.com/rubenrua/GstreamerCodeSnippets/tree/master/1.0/Python/pygst-tutorial">Ruben Gonzalez's</a> rescue from Google's cache of the original by Jens Persson.  This document differs in:
 </p>
 
 <ul class="org-ul">
-<li><a href="https://github.com/rubenrua/GstreamerCodeSnippets">GstreamerCodeSnippets</a>
+<li>Ruben's markdown converted to org-mode
+</li>
+<li>Command line and Python examples tested and some fixed for GStreamer 1.0 (problems may remain)
+</li>
+<li>Change the ASCII art into <a href="http://ditaa.sourceforge.net/">ditaa</a> diagrams
+</li>
+<li>Text edited for minor language things
+</li>
+</ul>
+
+<p>
+Other useful sources of info on using GStreamer 1.0 Python bindings:
+</p>
+
+<ul class="org-ul">
+<li>Ruben's <a href="https://github.com/rubenrua/GstreamerCodeSnippets">GstreamerCodeSnippets</a>
 </li>
 <li><a href="https://lazka.github.io/pgi-docs/#Gst-1.0">API Reference</a>
 </li>
@@ -165,7 +186,7 @@ Sources of info:
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Brett Viren</p>
-<p class="date">Created: 2015-01-04 Sun 09:03</p>
+<p class="date">Created: 2015-01-04 Sun 09:45</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.5h)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
