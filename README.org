@@ -1,12 +1,16 @@
 #+TITLE: Tutorial on using GStreamer Python Bindings in org-mode
 
-This holds a tutorial written in Emacs org-mode on using the Python bindings for GStreamer 1.0.  The starting point was from [[https://github.com/rubenrua/GstreamerCodeSnippets/tree/master/1.0/Python/pygst-tutorial][Ruben Gonzalez's]] rescue of the original by Jens Persson.  What I have done is to convert it into an org-mode document, make small edits of the text, go through and check the code for correctness and extend the conversion of the examples from GST 0.1 to 1.0.
+This repository holds a tutorial written in Emacs org-mode on using the Python bindings for GStreamer 1.0.  You can read it as HTML at: 
+
+http://brettviren.github.io/pygst-tutorial-org/pygst-tutorial.html
+
+The starting point for this document was from [[https://github.com/rubenrua/GstreamerCodeSnippets/tree/master/1.0/Python/pygst-tutorial][Ruben Gonzalez's]] rescue from Google's cache of the original by Jens Persson.  What I have done is to convert it into an org-mode document, make small edits of the text, go through and check the code for correctness and extend the conversion of the examples from GST 0.1 to 1.0.
 
 The main document is [[./pygst-tutorial.org]].  If your read this Emacs many of the examples will run from the document (=C-c C-c= on the source block) or you can tangle the examples to a file (=C-c C-v t=). 
 
 I commit these tangled/exported derived files here too but they may not always be kept up to date with the org source.
 
-Sources of info:
+Other sources of info on using GStreamer 1.0 Python bindings:
 
 - [[https://github.com/rubenrua/GstreamerCodeSnippets][GstreamerCodeSnippets]]
 - [[https://lazka.github.io/pgi-docs/#Gst-1.0][API Reference]]
