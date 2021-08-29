@@ -56,7 +56,7 @@ class GTK_Main(object):
         elif t == Gst.MessageType.ERROR:
             self.player.set_state(Gst.State.NULL)
             err, debug = message.parse_error()
-            print "Error: %s" % err, debug
+            print("Error: %s" % err, debug)
             self.button.set_label("Start")
             
     def on_sync_message(self, bus, message):

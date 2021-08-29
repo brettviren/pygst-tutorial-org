@@ -84,7 +84,7 @@ class GTK_Main(object):
             self.button.set_label("Start")
         elif t == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
-            print "Error: %s" % err, debug
+            print("Error: %s" % err, debug)
             self.player.set_state(Gst.State.NULL)
             self.button.set_label("Start")
             

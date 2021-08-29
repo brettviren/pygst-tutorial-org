@@ -58,7 +58,7 @@ class GTK_Main:
                         break
         elif typ == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
-            print "Error: %s" % err, debug
+            print("Error: %s" % err, debug)
             self.player.set_state(Gst.State.NULL)
 
     def decoder_callback(self, decoder, pad):
