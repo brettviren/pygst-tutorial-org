@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python
 
-import os, thread, time
+import os, threading, time
 import gi
 gi.require_version("Gst", "1.0")
 from gi.repository import Gst, GObject, Gtk, Gdk
