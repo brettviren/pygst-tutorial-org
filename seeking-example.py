@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python
 
-import os, thread, time
+import os, threading, time
 import gi
 gi.require_version("Gst", "1.0")
 from gi.repository import Gst, GObject, Gtk, Gdk
@@ -107,7 +107,7 @@ class GTK_Main:
             self.time_label.set_text("00:00 / 00:00")
         elif t == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
-            print "Error: %s" % err, debug
+            print("Error: %s" % err, debug)
             self.play_thread_id = None
             self.player.set_state(Gst.State.NULL)
             self.button.set_label("Start")
@@ -122,13 +122,13 @@ class GTK_Main:
         seek_ns = pos_int - 10 * 1000000000
         if seek_ns < 0:
             seek_ns = 0
-        print 'Backward: %d ns -> %d ns' % (pos_int, seek_ns)
+        print('Backward: %d ns -> %d ns' % (pos_int, seek_ns))
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
         
     def forward_callback(self, w):
         rc, pos_int = self.player.query_position(Gst.Format.TIME)
         seek_ns = pos_int + 10 * 1000000000
-        print 'Forward: %d ns -> %d ns' % (pos_int, seek_ns)
+        print('Forward: %d ns -> %d ns' % (pos_int, seek_ns))
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
         
     def convert_ns(self, t):

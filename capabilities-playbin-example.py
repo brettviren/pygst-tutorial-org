@@ -83,7 +83,7 @@ class GTK_Main:
             self.player.set_state(Gst.State.NULL)
             self.button.set_label("Start")
             err, debug = message.parse_error()
-            print "Error: %s" % err, debug
+            print("Error: %s" % err, debug)
 
     def on_sync_message(self, bus, message):
         if message.structure is None:
