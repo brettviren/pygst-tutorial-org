@@ -30,6 +30,7 @@ class GTK_Main:
         videoscale.set_property("method", 1)
         pad = videoscale.get_static_pad("sink")
         ghostpad = Gst.GhostPad.new("sink", pad)
+        ghostpad.set_active(True)
         self.bin.add_pad(ghostpad)
         caps = Gst.Caps.from_string("video/x-raw, width=720")
         filter = Gst.ElementFactory.make("capsfilter", "filter")
